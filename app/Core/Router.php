@@ -37,10 +37,10 @@ class Router
     {
         $requestMethod = $_SERVER['REQUEST_METHOD'];
         $requestUri = $_SERVER['REQUEST_URI'];
-
         // Remove query string from URI.
         if (false !== ($pos = strpos($requestUri, '?'))) {
             $requestUri = substr($requestUri, 0, $pos);
+          
         }
 
         // Normalize route URIs with leading/trailing slashes.
@@ -50,13 +50,13 @@ class Router
             if (preg_match("~^$pattern$~", $requestUri, $matches)) {
 
                 $parameterValues = array_slice($matches, 1);
+                var_dump($matches);
                 $parameterNames = array_keys($matches);
 
                 $parameterValues = [];
                 foreach ($parameterNames as $name) {
                     $parameterValues[$name] = $matches[$name];
                 }
-
                 $parameters = array_merge($parameterNames, $parameterValues, $this->parameters);
                 if ($this->runMiddleware($route['middleware'])) {
                     $response = $this->invokeAction($route['action'], $parameters);
