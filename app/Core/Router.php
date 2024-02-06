@@ -130,11 +130,10 @@ class Router
         }
 
         // Normalize route URIs with leading/trailing slashes.
-        $requestUri =  "/". trim($requestUri, '/');
+        $requestUri =  "/" . trim($requestUri, '/');
         foreach ($this->routes[$requestMethod] ?? [] as $pattern => $route) {
 
             if (preg_match("~^$pattern$~", $requestUri, $matches)) {
-                var_dump(array_shift($matches));
                 array_shift($matches); // Remove the full text match.
 
                 if ($this->runMiddleware($route['middleware'])) {
@@ -184,8 +183,17 @@ class Router
 
         list($controller, $method) = explode('@', $action);
 
+
         if (!is_subclass_of($controller, Controller::class)) {
-            throw new \RuntimeException('Controller must be a subclass of ' . Controller::class);
+            $controller = '\\App\\Http\\Controllers\\' . $controller;
+        
+            if (!class_exists($controller)) {
+                throw new \RuntimeException('Controller not found: ' . $controller);
+            }
+        
+            if (!is_subclass_of($controller, Controller::class)) {
+                throw new \RuntimeException('Controller must be a subclass of ' . Controller::class);
+            }
         }
 
         $controller = new $controller;
