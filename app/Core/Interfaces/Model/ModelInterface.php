@@ -1,6 +1,11 @@
 <?php
 
-interface ModelInterface extends JsonSerializable {
+namespace App\Core\Interfaces\Model;
+
+use JsonSerializable;
+
+interface ModelInterface extends JsonSerializable
+{
     public function getTableName(): string;
     public function save(): void;
     public function update(): void;
