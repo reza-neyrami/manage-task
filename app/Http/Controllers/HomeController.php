@@ -10,6 +10,7 @@ class HomeController extends Controller
     {
         $user = User::find(intval($id));
         // return  json_encode($user, JSON_PRETTY_PRINT);
+        
         return $user;
     }
 }
