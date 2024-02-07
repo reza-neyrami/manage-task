@@ -13,11 +13,13 @@ class UserController extends Controller
 
     public function __construct(UserRepository $userRepository)
     {
+        
         $this->userRepository = $userRepository;
     }
 
     public function show($id)
     {
+        
         $user = $this->userRepository->findById($id);
 
         if (!$user) {

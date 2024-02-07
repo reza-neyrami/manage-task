@@ -24,12 +24,14 @@ trait DatabaseConnectionTrait
         $host = "127.0.0.1";
         $user = "root";
         $password = "secret";
-        $database = "heavens";
+        $database = "taskmanage";
         try {
 
             $this->pdo = new PDO("mysql:host=$host;dbname=$database", $user, $password);
 
             $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            // $sql = file_get_contents(__DIR__.'/task.sql');
+            // $this->pdo->exec($sql);
             error_log("Connection successful: Established connection to database.");
         } catch (PDOException $e) {
             echo "Connection failed: " . $e->getMessage();

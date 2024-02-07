@@ -2,10 +2,9 @@
 
 use App\Core\Router;
 use App\Core\Services\Container;
+use App\Core\TraitS\DatabaseConnectionTrait;
 
 require __DIR__ . "/vendor/autoload.php";
-
-
 
 
 $container = new Container;

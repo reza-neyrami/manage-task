@@ -80,6 +80,13 @@ abstract class Model  implements ModelInterface
         $stmt->execute();
     }
 
+    public static function first(): ?self {
+        $model = new static();
+        $sql = "SELECT * FROM {$model->table} ORDER BY id ASC LIMIT 1";
+        $stmt = $model->pdo->query($sql);
+        return $stmt->fetchObject(static::class) ?: null;
+    }
+
     public static function update(int $id, array $data): void
     {
         $model = new static();
@@ -95,6 +102,24 @@ abstract class Model  implements ModelInterface
             $stmt->execute($values);
         });
     }
+
+    public static function create(array $data): self {
+        $model = new static();
+        foreach ($data as $property => $value) {
+            if (in_array($property, $model->fillable)) {
+                $model->{$property} = $value;
+            }
+        }
+        $model->save();
+        return $model;
+    }
+
+    public static function deleteId(int $id): void{
+        $model = static::find($id);
+        if ($model) {
+            $model->delete();
+        }
+    }
     
     public static function paginate(int $page = 1, int $perPage = 15): array {
         $model = new static();
@@ -103,6 +128,8 @@ abstract class Model  implements ModelInterface
         $stmt = $model->pdo->query($sql);
         return $stmt->fetchAll(PDO::FETCH_CLASS, static::class);
     }
+
+
 
     protected function getUpdateProperties(): array
     {
