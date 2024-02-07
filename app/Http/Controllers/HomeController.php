@@ -8,11 +8,8 @@ class HomeController extends Controller
 {
     public function index($id)
     {
-       return User::find(intval($id));
-    }
-
-    public function __toString()
-    {
-        return [];
+        $user = User::find(intval($id));
+        // return  json_encode($user, JSON_PRETTY_PRINT);
+        return $user;
     }
 }

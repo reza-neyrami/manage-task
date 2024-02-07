@@ -2,9 +2,10 @@
 
 namespace App\Core\Interfaces\Model;
 
+use IteratorAggregate;
 use JsonSerializable;
 
-interface ModelInterface extends JsonSerializable
+interface ModelInterface extends Arrayable , JsonSerializable
 {
     public function getTableName(): string;
     // public function save(): void;

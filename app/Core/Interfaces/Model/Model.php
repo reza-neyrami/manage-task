@@ -2,13 +2,16 @@
 
 namespace App\Core\Interfaces\Model;
 
+use App\Core\TraitS\Arrayable;
 use App\Core\TraitS\DatabaseConnectionTrait;
 use PDO;
 
-abstract class Model implements ModelInterface
+
+abstract class Model  implements ModelInterface
 {
-    use DatabaseConnectionTrait;
+    use  Arrayable , DatabaseConnectionTrait;
     protected $fillable = [];
+    protected $toArray = [];
     protected $table;
 
 
@@ -19,13 +22,9 @@ abstract class Model implements ModelInterface
 
     public function jsonSerialize(): array
     {
-        $data = [];
-        foreach ($this->fillable as $property) {
-            $data[$property] = $this->{$property};
-        }
-
-        return $data;
+      return $this->toArray($this);
     }
+ 
 
     public static function find(int $id)
     {
