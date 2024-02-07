@@ -26,5 +26,13 @@ class UserController extends Controller
         return Response::json($user, 200);;
     }
 
-    
+    public function create()
+    {
+        $user = $this->userRepository->create([
+            'name' => 'test',
+            'email' => '<EMAIL>',
+            'password' => '<PASSWORD>'
+        ]);
+        var_dump($user);
+    }
 }

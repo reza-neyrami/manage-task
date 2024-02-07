@@ -4,10 +4,11 @@ namespace App\Core\Interfaces\User;
 
 use App\Model\User;
 
-interface UserRepositoryInterface{
-    public function findById(int $id):?User;
+interface UserRepositoryInterface
+{
+    public function findById(int $id): ?User;
     // public function findByEmail(string $email):?User;
-    // public function save(User $user): void;
+    public function create(array $data):mixed;
     // public function update(User $user): void;
     // public function delete(User $user): void;
     // public function all(): array;

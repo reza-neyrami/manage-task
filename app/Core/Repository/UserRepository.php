@@ -16,6 +16,11 @@ class UserRepository implements UserRepositoryInterface
     {
         return  $this->model->find($id);
     }
+    
+    public function create(array $data): mixed
+    {
+        return  $this->model->save($data);
+    }
 
    
 }
