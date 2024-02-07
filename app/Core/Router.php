@@ -4,6 +4,7 @@ namespace App\Core;
 
 use App\Http\Controllers\Controller;
 use Closure;
+use ReflectionClass;
 use ReflectionMethod;
 
 /**
@@ -100,10 +101,26 @@ class Router
             }
         }
 
-        $controller = new $controller;
+  
         $reflectionMethod = new ReflectionMethod($controller, $method);
         $methodParams = $reflectionMethod->getParameters();
-
+        $reflection = new ReflectionClass($controller);
+        $constructor = $reflection->getConstructor();
+        if ($constructor && $constructor->getNumberOfRequiredParameters() > 0) {
+            $dependencies = [];
+            foreach ($constructor->getParameters() as $param) {
+                $class = $param->getType();
+                if ($class) {
+                 
+                    $dependencies[] = $this->getDependency($class);
+                }
+            }
+            var_dump($dependencies);
+            $controller = new $controller(...$dependencies);
+        } else {
+            $controller = new $controller;
+        }
+    
         if (!$reflectionMethod->isPublic()) {
             throw new \RuntimeException('Controller method must be public');
         }
@@ -114,8 +131,16 @@ class Router
         }
 
         // Call method
+        // return $reflectionMethod->invokeArgs($controller, $mappedParams);
         return $reflectionMethod->invokeArgs($controller, $mappedParams);
     }
+
+    private function getDependency($class)
+{
+    // پیاده سازی logic برای دریافت وابستگی بر اساس نیاز پروژه شما
+    // می توانید از یک DI Container با پیکربندی ساده استفاده کنید
+    return new $class;
+}
 
     public function group($prefix, array $middleware = [], array $options = [], Closure $callback)
     {
