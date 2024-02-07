@@ -48,36 +48,60 @@ abstract class Model  implements ModelInterface
     public function save(): void
     {
         $this->executeTransaction(function () {
-            $properties = $this->getInsertProperties();
+            $properties = $this->getUpdateProperties();
             $placeholders = implode(', ', array_fill(0, count($properties), '?'));
             $values = array_map(fn ($p) => $this->{$p}, $properties);
-            $sql = "INSERT INTO {$this->table} (" . implode(', ', $properties) . ") VALUES ($placeholders)";
-            $stmt = $this->pdo->prepare($sql);
-            $stmt->execute($values);
-        });
-    }
 
-    public function update(): void
-    {
-        $this->executeTransaction(function () {
-            $properties = $this->getUpdateProperties();
-            $set = [];
-            foreach ($properties as $property) {
-                $set[] = "$property = ?";
+            if (isset($this->id)) {
+                $set = [];
+                foreach ($properties as $property) {
+                    $set[] = "$property = ?";
+                }
+                $values = array_merge(array_values($properties), [$this->id]);
+                $sql = "UPDATE {$this->table} SET " . implode(', ', $set) . " WHERE id = ?";
+            } else {
+                $sql = "INSERT INTO {$this->table} (" . implode(', ', $properties) . ") VALUES ($placeholders)";
             }
-            $values = array_merge(array_values($properties), [$this->id]);
-            $sql = "UPDATE {$this->table} SET " . implode(', ', $set) . " WHERE id = ?";
+
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute($values);
+
+            if (!isset($this->id)) {
+                $this->id = $this->pdo->lastInsertId();
+            }
         });
     }
-
+  
     public function delete(): void
     {
         $sql = "DELETE FROM {$this->table} WHERE id = ?";
         $stmt = $this->pdo->prepare($sql);
         $stmt->bindParam(1, $this->id, PDO::PARAM_INT);
         $stmt->execute();
+    }
+
+    public static function update(int $id, array $data): void
+    {
+        $model = new static();
+        $model->executeTransaction(function () use ($model, $id, $data) {
+            $properties = $model->getUpdateProperties();
+            $set = [];
+            foreach ($properties as $property) {
+                $set[] = "$property = ?";
+            }
+            $values = array_merge(array_values($data), [$id]);
+            $sql = "UPDATE {$model->table} SET " . implode(', ', $set) . " WHERE id = ?";
+            $stmt = $model->pdo->prepare($sql);
+            $stmt->execute($values);
+        });
+    }
+    
+    public static function paginate(int $page = 1, int $perPage = 15): array {
+        $model = new static();
+        $offset = ($page - 1) * $perPage;
+        $sql = "SELECT * FROM {$model->table} LIMIT $perPage OFFSET $offset";
+        $stmt = $model->pdo->query($sql);
+        return $stmt->fetchAll(PDO::FETCH_CLASS, static::class);
     }
 
     protected function getUpdateProperties(): array
