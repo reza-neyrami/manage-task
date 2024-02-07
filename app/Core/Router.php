@@ -50,7 +50,6 @@ class Router
             if (preg_match("~^$pattern$~", $requestUri, $matches)) {
 
                 $parameterValues = array_slice($matches, 1);
-                var_dump($matches);
                 $parameterNames = array_keys($matches);
 
                 $parameterValues = [];

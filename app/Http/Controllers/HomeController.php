@@ -2,10 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Model\User;
+
 class HomeController extends Controller
 {
-    public function index($user)
+    public function index($id)
     {
-        return 'سلام دنیا' . $user;
+       return User::find(intval($id));
+    }
+
+    public function __toString()
+    {
+        return [];
     }
 }

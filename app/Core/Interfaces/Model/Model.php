@@ -10,17 +10,24 @@ abstract class Model implements ModelInterface
     use DatabaseConnectionTrait;
     protected $fillable = [];
     protected $table;
-    public function __construct()
-    {
-        $this->table = $this->getTableName();
-    }
+
 
     public function getTableName(): string
     {
         return $this->table;
     }
 
-    public static function find(int $id): ?self
+    public function jsonSerialize(): array
+    {
+        $data = [];
+        foreach ($this->fillable as $property) {
+            $data[$property] = $this->{$property};
+        }
+
+        return $data;
+    }
+
+    public static function find(int $id)
     {
         $model = new static();
         $sql = "SELECT * FROM {$model->table} WHERE id = ?";

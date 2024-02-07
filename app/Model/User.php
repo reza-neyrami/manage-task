@@ -1,5 +1,5 @@
 <?php
-
+namespace App\Model;
 use App\Core\Interfaces\Model\Model;
 
 class User extends Model 
@@ -8,7 +8,7 @@ class User extends Model
     protected $table = 'users';
     protected $fillable = ['name', 'email', 'password'];
 
-    public
+    
     
 
 }
