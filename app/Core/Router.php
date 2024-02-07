@@ -2,7 +2,10 @@
 
 namespace App\Core;
 
+use App\Core\Repository\UserRepository;
+use App\Core\Services\Container;
 use App\Http\Controllers\Controller;
+use App\Model\User;
 use Closure;
 use ReflectionClass;
 use ReflectionMethod;
@@ -18,6 +21,12 @@ class Router
     private $middleware = [];
     private $groupOptions = [];
     private $parameters = [];
+    protected $container;
+
+    public function __construct(Container $container)
+    {
+        $this->container = $container;
+    }
 
     public function addRoute($method, $uri, $callback)
     {
@@ -41,7 +50,6 @@ class Router
         // Remove query string from URI.
         if (false !== ($pos = strpos($requestUri, '?'))) {
             $requestUri = substr($requestUri, 0, $pos);
-          
         }
 
         // Normalize route URIs with leading/trailing slashes.
@@ -80,67 +88,29 @@ class Router
         return true;
     }
 
+
     private function invokeAction($action, array $parameters): mixed
     {
-
         if (is_callable($action)) {
             return call_user_func_array($action, $parameters);
         }
 
         list($controller, $method) = explode('@', $action);
+        $controller = '\\App\\Http\\Controllers\\' . $controller;
+        $controller = $this->container->make($controller);
 
-        if (!is_subclass_of($controller, Controller::class)) {
-            $controller = '\\App\\Http\\Controllers\\' . $controller;
-
-            if (!class_exists($controller)) {
-                throw new \RuntimeException('Controller not found: ' . $controller);
-            }
-
-            if (!is_subclass_of($controller, Controller::class)) {
-                throw new \RuntimeException('Controller must be a subclass of ' . Controller::class);
-            }
-        }
-
-  
         $reflectionMethod = new ReflectionMethod($controller, $method);
-        $methodParams = $reflectionMethod->getParameters();
-        $reflection = new ReflectionClass($controller);
-        $constructor = $reflection->getConstructor();
-        if ($constructor && $constructor->getNumberOfRequiredParameters() > 0) {
-            $dependencies = [];
-            foreach ($constructor->getParameters() as $param) {
-                $class = $param->getType();
-                if ($class) {
-                 
-                    $dependencies[] = $this->getDependency($class);
-                }
-            }
-            var_dump($dependencies);
-            $controller = new $controller(...$dependencies);
-        } else {
-            $controller = new $controller;
-        }
-    
+
         if (!$reflectionMethod->isPublic()) {
             throw new \RuntimeException('Controller method must be public');
         }
 
-        foreach ($methodParams as $param) {
-            $paramName = $param->getName();
-            $mappedParams[] = $parameters[$paramName];
-        }
+        $mappedParams = array_map(function ($param) use ($parameters) {
+            return $parameters[$param->getName()];
+        }, $reflectionMethod->getParameters());
 
-        // Call method
-        // return $reflectionMethod->invokeArgs($controller, $mappedParams);
         return $reflectionMethod->invokeArgs($controller, $mappedParams);
     }
-
-    private function getDependency($class)
-{
-    // پیاده سازی logic برای دریافت وابستگی بر اساس نیاز پروژه شما
-    // می توانید از یک DI Container با پیکربندی ساده استفاده کنید
-    return new $class;
-}
 
     public function group($prefix, array $middleware = [], array $options = [], Closure $callback)
     {

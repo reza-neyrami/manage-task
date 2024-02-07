@@ -4,16 +4,16 @@ namespace App\Http\Controllers;
 
 use App\Core\Repository\UserRepository;
 use App\Core\Services\Response;
-use App\Model\User;
+
 
 
 class UserController extends Controller
 {
     private $userRepository;
 
-    public function __construct()
+    public function __construct(UserRepository $userRepository)
     {
-        $this->userRepository = new UserRepository(new User());
+        $this->userRepository = $userRepository;
     }
 
     public function show($id)
