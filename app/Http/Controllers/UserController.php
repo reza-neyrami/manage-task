@@ -33,9 +33,9 @@ class UserController extends Controller
     public function create()
     {
         $user = $this->userRepository->create([
-            'name' => 'test',
+            'username' => 'test',
             'email' => 'neyrami.65@gmail.com',
-            'password' => 'password'
+            'password' => '1234567'
         ]);
         var_dump($user);
     }
