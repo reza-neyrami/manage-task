@@ -18,8 +18,6 @@ $container = new Container;
 // Bind your controllers to the container here
 $router = new Router($container);
 
-
-
 $router->post('/salam','HomeController@index');
 $router->get('/home/{id}','UserController@show');
 $router->post('/create','UserController@create');

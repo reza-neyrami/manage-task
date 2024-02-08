@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Core\Repository\AuthRepository;
 use App\Core\Repository\UserRepository;
+use App\Core\Services\JWTApi;
 use App\Core\Services\Request;
 use App\Core\Services\Response;
 
@@ -51,7 +52,17 @@ class UserController extends Controller
             'email' => $this->request->get('email'),
             'password' => $this->request->get('password')
         ]);
-        return Response::json($login, 200);
+        if ($login['status'] == false) {
+            return Response::json($login, 401);
+        }
+        $user_id = 1; // assuming the user is authenticated
+        $secret_key = 'your_secret_key';
+    
+        $jwt_token = JWTApi::generate_jwt_token($user_id, $secret_key);
+        return Response::json([
+            'access_token' => $jwt_token,
+            "message"=> $login,
+        ], 200);
         // var_dump($this->request->get('email'));
     }
 }
