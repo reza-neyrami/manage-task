@@ -20,8 +20,10 @@ $router = new Router($container);
 
 
 
+$router->post('/salam','HomeController@index');
 $router->get('/home/{id}','UserController@show');
 $router->post('/create','UserController@create');
+$router->post('/login','UserController@login');
 // $router->get('/users', [UserController::class, 'index']);
 // $router->get('/users/{id}', [UserController::class, 'show']);
 

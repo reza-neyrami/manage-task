@@ -12,7 +12,9 @@ abstract class Model  implements ModelInterface
     use Arrayable, DatabaseConnectionTrait;
     protected $fillable = [];
     protected $toArray = [];
+    protected $bindings = [];
     protected $table;
+    protected $sql;
 
 
     public function getTableName(): string
@@ -71,7 +73,7 @@ abstract class Model  implements ModelInterface
             }
         });
     }
-  
+
     public function delete(): void
     {
         $sql = "DELETE FROM {$this->table} WHERE id = ?";
@@ -80,7 +82,8 @@ abstract class Model  implements ModelInterface
         $stmt->execute();
     }
 
-    public static function first(): ?self {
+    public static function first(): ?self
+    {
         $model = new static();
         $sql = "SELECT * FROM {$model->table} ORDER BY id ASC LIMIT 1";
         $stmt = $model->pdo->query($sql);
@@ -103,7 +106,8 @@ abstract class Model  implements ModelInterface
         });
     }
 
-    public static function create(array $data): self {
+    public static function create(array $data): self
+    {
         $model = new static();
         foreach ($data as $property => $value) {
             if (in_array($property, $model->fillable)) {
@@ -114,14 +118,30 @@ abstract class Model  implements ModelInterface
         return $model;
     }
 
-    public static function deleteId(int $id): void{
+    public function where(string $column, string $value, string $operator = '='): self
+    {
+        // Initialize $sql if it's not yet defined (to avoid the error)
+        if (!isset($this->sql)) {
+            $this->sql = "SELECT * FROM {$this->table}";
+        }
+
+        $this->sql .= " WHERE $column $operator ?";
+        $this->bindings[] = $value;
+        return $this;
+    }
+    
+
+
+    public static function deleteId(int $id): void
+    {
         $model = static::find($id);
         if ($model) {
             $model->delete();
         }
     }
-    
-    public static function paginate(int $page = 1, int $perPage = 15): array {
+
+    public static function paginate(int $page = 1, int $perPage = 15): array
+    {
         $model = new static();
         $offset = ($page - 1) * $perPage;
         $sql = "SELECT * FROM {$model->table} LIMIT $perPage OFFSET $offset";

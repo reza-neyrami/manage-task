@@ -19,7 +19,7 @@ class UserRepository implements UserRepositoryInterface
     
     public function create(array $data): mixed
     {
-        return  $this->model->save($data);
+        return  $this->model->create($data);
     }
 
    
