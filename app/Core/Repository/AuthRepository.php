@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Core\Repository;
 
 use App\Core\Interfaces\Auth\AuthRepositoryInterface;
@@ -8,7 +9,8 @@ class AuthRepository implements AuthRepositoryInterface
 {
     private $model;
 
-    public function __construct(User $user) {
+    public function __construct(User $user)
+    {
 
         $this->model = $user;
     }
@@ -22,7 +24,7 @@ class AuthRepository implements AuthRepositoryInterface
         if (!password_verify($data['password'], $user->password)) {
             return ['message' => 'invalid password'];
         }
-        return ['message' => 'logged in successfully'];
+        return ['message' => 'logged in successfully', 'status' => true];
     }
 
     public function register(array $data): array
@@ -33,8 +35,6 @@ class AuthRepository implements AuthRepositoryInterface
         }
         $data['password'] = password_hash($data['password'], PASSWORD_DEFAULT);
         $this->model->create($data);
-        return ['message' => 'user created successfully'];
+        return ['message' => 'user created successfully', 'status' => true];
     }
-
-   
 }

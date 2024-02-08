@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Core\Repository\AuthRepository;
 use App\Core\Repository\UserRepository;
+use App\Core\Services\Request;
 use App\Core\Services\Response;
 
 
@@ -12,11 +13,13 @@ class UserController extends Controller
 {
     private $userRepository;
     private $authRepositroy;
+    protected $request;
 
-    public function __construct(UserRepository $userRepository, AuthRepository $authRepositroy)
+    public function __construct(UserRepository $userRepository, AuthRepository $authRepositroy, Request $request)
     {
         $this->userRepository = $userRepository;
         $this->authRepositroy = $authRepositroy;
+        $this->request = $request;
     }
 
     public function show($id)
@@ -33,18 +36,22 @@ class UserController extends Controller
     public function create()
     {
         $user = $this->userRepository->create([
-            'username' => 'test',
-            'email' => 'neyrami.65@gmail.com',
-            'password' => '1234567'
+            'username' => $this->request->get('username'),
+            'email' => $this->request->get('email'),
+            'password' =>  password_hash($this->request->get('password'), PASSWORD_DEFAULT),
+            'role' => 'admin'
         ]);
-        var_dump($user);
+
+        return Response::json($user, 201);
     }
 
-    public function login(){
-        $user = $this->authRepositroy->login([
-            'email' => '<EMAIL>',
-            'password' => 'password'
+    public function login()
+    {
+        $login =  $this->authRepositroy->login([
+            'email' => $this->request->get('email'),
+            'password' => $this->request->get('password')
         ]);
-        var_dump($user);
+        return Response::json($login, 200);
+        // var_dump($this->request->get('email'));
     }
 }
