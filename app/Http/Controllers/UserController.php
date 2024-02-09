@@ -55,10 +55,8 @@ class UserController extends Controller
         if ($login['status'] == false) {
             return Response::json($login, 401);
         }
-        $user_id = 1; // assuming the user is authenticated
-        $secret_key = 'your_secret_key';
-
-        $jwt_token = JWTApi::generate_jwt_token($user_id, $secret_key);
+ 
+        $jwt_token = JWTApi::generate_jwt_token($login['user_id'], $_ENV['JWT_SECRET']);
         return Response::json([
             'access_token' => $jwt_token,
             "message" => $login,

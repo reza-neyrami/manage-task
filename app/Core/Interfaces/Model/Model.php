@@ -15,6 +15,7 @@ abstract class Model  implements ModelInterface
     protected $bindings = [];
     protected $table;
     protected $sql;
+    protected $id;
 
 
     public function getTableName(): string

@@ -3,6 +3,7 @@
 namespace App\Core\Repository;
 
 use App\Core\Interfaces\Auth\AuthRepositoryInterface;
+use App\Core\Services\JWTApi;
 use App\Model\User;
 
 class AuthRepository implements AuthRepositoryInterface
@@ -24,7 +25,7 @@ class AuthRepository implements AuthRepositoryInterface
         if (!password_verify($data['password'], $user->password)) {
             return ['message' => 'invalid password'];
         }
-        return ['message' => 'logged in successfully', 'status' => true];
+       return ['message' => 'user logged in successfully', 'user_id'=>$user->id,'status' => true];
     }
 
     public function register(array $data): array
