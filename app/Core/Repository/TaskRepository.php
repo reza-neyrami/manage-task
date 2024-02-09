@@ -2,10 +2,10 @@
 
 namespace App\Core\Repository;
 
-use App\Core\Interfaces\Auth\AuthRepositoryInterface;
+use App\Core\Interfaces\Task\TaskRepositoryInterface;
+use App\Model\Task;
 
-
-class TaskRepository implements AuthRepositoryInterface
+class TaskRepository implements TaskRepositoryInterface
 {
     private $model;
 
@@ -15,26 +15,13 @@ class TaskRepository implements AuthRepositoryInterface
         $this->model = $task;
     }
 
-    public function login(array $data): array
+    public function findById(int $id): ?Task
     {
-        $user = $this->model->where('email', $data['email'])->first();
-        if (!$user) {
-            return ['message' => 'user not found'];
-        }
-        if (!password_verify($data['password'], $user->password)) {
-            return ['message' => 'invalid password'];
-        }
-        return ['message' => 'logged in successfully', 'status' => true];
+        return  $this->model->find($id);
     }
-
-    public function register(array $data): array
+    
+    public function create(array $data): mixed
     {
-        $user = $this->model->where('email', $data['email'])->first();
-        if ($user) {
-            return ['message' => 'user already exists'];
-        }
-        $data['password'] = password_hash($data['password'], PASSWORD_DEFAULT);
-        $this->model->create($data);
-        return ['message' => 'user created successfully', 'status' => true];
+        return  $this->model->create($data);
     }
 }

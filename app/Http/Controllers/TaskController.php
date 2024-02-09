@@ -2,8 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Core\Repository\AuthRepository;
-use App\Core\Repository\UserRepository;
+use App\Core\Repository\TaskRepository;
 use App\Core\Services\JWTApi;
 use App\Core\Services\Request;
 use App\Core\Services\Response;
@@ -12,57 +11,39 @@ use App\Core\Services\Response;
 
 class TaskController extends Controller
 {
-    private $userRepository;
-    private $authRepositroy;
+    private $taskRepository;
     protected $request;
 
-    public function __construct(TaskRepository $userRepository, AuthRepository $authRepositroy, Request $request)
+    public function __construct(TaskRepository $taskRepository, Request $request)
     {
-        $this->userRepository = $userRepository;
-        $this->authRepositroy = $authRepositroy;
+        $this->taskRepository = $taskRepository;
         $this->request = $request;
     }
 
     public function show($id)
     {
 
-        $user = $this->userRepository->findById($id);
+        $task = $this->taskRepository->findById($id);
 
-        if (!$user) {
-            return Response::json(['message' => 'user not found'], 404);
+        if (!$task) {
+            return Response::json(['message' => 'task not found'], 404);
         }
-        return $user;
+        return $task;
     }
 
     public function create()
     {
-        $user = $this->userRepository->create([
-            'username' => $this->request->get('username'),
-            'email' => $this->request->get('email'),
-            'password' =>  password_hash($this->request->get('password'), PASSWORD_DEFAULT),
-            'role' => 'admin'
+        $task = $this->taskRepository->create([
+            'name' => $this->request->get('name'),
+            'description' => $this->request->get('description'),
+            'startDate' =>  $this->request->get('startDate'),
+            'endDate' =>  $this->request->get('endDate'),
+            'status' => $this->request->get('status') ?? 'todo',
+            'userId' => $this->request->get('userId')
         ]);
 
-        return Response::json($user, 201);
+        return Response::json($task, 201);
     }
 
-    public function login()
-    {
-        $login =  $this->authRepositroy->login([
-            'email' => $this->request->get('email'),
-            'password' => $this->request->get('password')
-        ]);
-        if ($login['status'] == false) {
-            return Response::json($login, 401);
-        }
-        $user_id = 1; // assuming the user is authenticated
-        $secret_key = 'your_secret_key';
-
-        $jwt_token = JWTApi::generate_jwt_token($user_id, $secret_key);
-        return Response::json([
-            'access_token' => $jwt_token,
-            "message" => $login,
-        ], 200);
-        // var_dump($this->request->get('email'));
-    }
+  
 }

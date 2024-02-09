@@ -40,7 +40,7 @@ class UserController extends Controller
             'username' => $this->request->get('username'),
             'email' => $this->request->get('email'),
             'password' =>  password_hash($this->request->get('password'), PASSWORD_DEFAULT),
-            'role' => 'admin'
+            'role' => $this->request->get('role') ?? 'programmer'
         ]);
 
         return Response::json($user, 201);
