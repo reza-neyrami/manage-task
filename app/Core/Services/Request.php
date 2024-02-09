@@ -13,7 +13,11 @@ class Request
         header('Content-Type: application/json');
     }
 
-
+    public function getHeader($key, $default = null)
+    {
+        return isset($this->params['header'][$key]) ? $this->params['header'][$key] : $default;
+    }
+    
     public function get($key, $default = null)
     {
 

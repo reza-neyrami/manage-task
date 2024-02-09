@@ -10,13 +10,13 @@ use App\Core\Services\Response;
 
 
 
-class UserController extends Controller
+class TaskController extends Controller
 {
     private $userRepository;
     private $authRepositroy;
     protected $request;
 
-    public function __construct(UserRepository $userRepository, AuthRepository $authRepositroy, Request $request)
+    public function __construct(TaskRepository $userRepository, AuthRepository $authRepositroy, Request $request)
     {
         $this->userRepository = $userRepository;
         $this->authRepositroy = $authRepositroy;

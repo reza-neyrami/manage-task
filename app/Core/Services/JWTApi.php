@@ -2,6 +2,8 @@
 
 namespace App\Core\Services;
 
+use Exception;
+use Firebase\JWT\ExpiredException;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 
@@ -34,5 +36,22 @@ class JWTApi
 
         return JWT::encode($payload, $secret_key, "HS256");
     }
-}
 
+    public static function validate_jwt_token($jwt_token, $secret_key)
+    {
+        try {
+            $decoded_token = self::decode_jwt_token($jwt_token, $secret_key);
+            return true;
+        } catch (ExpiredException $e) {
+            // توکن منقضی شده است
+            header('HTTP/1.0 401 Unauthorized');
+            echo "توکن شما منقضی شده است. لطفا دوباره وارد شوید.";
+            exit();
+        } catch (Exception $e) {
+            // توکن نامعتبر است
+            header('HTTP/1.0 401 Unauthorized');
+            echo "توکن شما نامعتبر است. لطفا دوباره وارد شوید.";
+            exit();
+        }
+    }
+}

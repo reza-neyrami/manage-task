@@ -14,17 +14,18 @@ trait DatabaseConnectionTrait
 
     public function __construct()
     {
-        // $env = Dotenv::createImmutable(__DIR__."../../../.env");
+        // $env = Dotenv::createImmutable(__DIR__);
         // $env->load();
-        // $host = $_ENV['DB_HOST'];
-        // $user = $_ENV['DB_USER'];
-        // $password = $_ENV['DB_PASSWORD'];
-        // $database = $_ENV['DB_DATABASE'];
+        // var_dump($env);
+        $host = $_ENV['DB_HOST'];
+        $user = $_ENV['DB_USERNAME'];
+        $password = $_ENV['DB_PASSWORD'];
+        $database = $_ENV['DB_DATABASE'];
 
-        $host = "127.0.0.1";
-        $user = "root";
-        $password = "secret";
-        $database = "taskmanage";
+        // $host = "127.0.0.1";
+        // $user = "root";
+        // $password = "secret";
+        // $database = "taskmanage";
         try {
 
             $this->pdo = new PDO("mysql:host=$host;dbname=$database", $user, $password);

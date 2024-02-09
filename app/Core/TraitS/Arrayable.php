@@ -1,8 +1,10 @@
 <?php
+
 namespace App\Core\TraitS;
 
-trait Arrayable {
-    
+trait Arrayable
+{
+
     public function toArray(): array
     {
         $data = [];
@@ -12,8 +14,13 @@ trait Arrayable {
         return $data;
     }
 
+    public function jsonSerialize(): array
+    {
+        return $this->toArray($this);
+    }
+
     public function __toString()
     {
-        return json_encode($this->toArray());
+        return json_encode($this);
     }
 }

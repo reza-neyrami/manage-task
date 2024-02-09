@@ -4,14 +4,11 @@ namespace App\Core;
 
 
 use App\Core\Services\Container;
+use App\Core\Services\Request;
 use Closure;
 use ReflectionMethod;
 
-/**
- * Class Router
- *
- * @package App\Core
- */
+
 class Router
 {
     private $routes = [];
@@ -25,13 +22,13 @@ class Router
         $this->container = $container;
     }
 
-    public function addRoute($method, $uri, $callback)
+    public function addRoute($method, $uri, $callback, array $middleware = [])
     {
         $pattern = $this->convertUriToRegex($uri);
 
         $this->routes[$method][$pattern] = [
             'action' => $callback,
-            'middleware' => $this->middleware,
+            'middleware' => $middleware,
         ];
     }
 
@@ -53,7 +50,7 @@ class Router
         $requestUri = "/" . trim($requestUri, '/');
         foreach ($this->routes[$requestMethod] ?? [] as $pattern => $route) {
 
-            if (preg_match("~^$pattern$~", $requestUri, $matches)) {
+            if (preg_match("~^$pattern~", $requestUri, $matches)) {
 
                 $parameterValues = array_slice($matches, 1);
                 $parameterNames = array_keys($matches);
@@ -74,17 +71,25 @@ class Router
         throw new \RuntimeException('No route found for ' . $requestMethod . ' ' . $requestUri);
     }
 
-    private function runMiddleware(array $middleware): bool
+  
+
+    private function runMiddleware(array $middlewares): bool
     {
-        foreach ($middleware as $middleware) {
-            if (!$middleware($this)) {
+        foreach ($middlewares as $middleware) {
+            if (is_string($middleware)) {
+                $middleware = $this->container->make($middleware);
+            }
+    
+            if (!$middleware) {
                 return false;
             }
+    
+            // Pass Closure instance to middleware
+            $middleware->handle($_REQUEST, fn() => true);
         }
 
         return true;
     }
-
 
     private function invokeAction($action, array $parameters): mixed
     {
@@ -121,28 +126,28 @@ class Router
         $this->parameters = [];
     }
 
-    public function get($uri, $callback)
+    public function get($uri, $callback, array $middleware = [])
     {
-        $this->addRoute('GET', $uri, $callback);
+        $this->addRoute('GET', $uri, $callback, $middleware);
     }
 
-    public function post($uri, $callback)
+    public function post($uri, $callback, array $middleware = [])
     {
-        $this->addRoute('POST', $uri, $callback);
+        $this->addRoute('POST', $uri, $callback, $middleware);
     }
 
-    public function put($uri, $callback)
+    public function put($uri, $callback, array $middleware = [])
     {
-        $this->addRoute('PUT', $uri, $callback);
+        $this->addRoute('PUT', $uri, $callback, $middleware);
     }
 
-    public function delete($uri, $callback)
+    public function delete($uri, $callback, array $middleware = [])
     {
-        $this->addRoute('DELETE', $uri, $callback);
+        $this->addRoute('DELETE', $uri, $callback, $middleware);
     }
 
-    public function patch($uri, $callback)
+    public function patch($uri, $callback, array $middleware = [])
     {
-        $this->addRoute('PATCH', $uri, $callback);
+        $this->addRoute('PATCH', $uri, $callback, $middleware);
     }
 }

@@ -12,13 +12,13 @@ class HomeController extends Controller
     {
         $this->request = $request;
     }
-    public function index()
+    public function index($id)
     {
-        return $this->request->only(['ok', 'reza']);
+        // return $this->request->only(['email', 'password']);
         // var_dump();
-        // $user = User::find(intval($id));
-        // return  json_encode($user, JSON_PRETTY_PRINT);
+        $user = User::find(intval($id));
+        return  json_encode($user, JSON_PRETTY_PRINT);
 
-        // return $user;
+        return $user;
     }
 }

@@ -22,11 +22,6 @@ abstract class Model  implements ModelInterface
         return $this->table;
     }
 
-    public function jsonSerialize(): array
-    {
-        return $this->toArray($this);
-    }
-
     public static function find(int $id)
     {
         $model = new static();
