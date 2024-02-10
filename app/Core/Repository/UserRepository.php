@@ -3,6 +3,7 @@
 namespace App\Core\Repository;
 
 use App\Core\Interfaces\User\UserRepositoryInterface;
+use App\Core\Services\Response;
 use App\Model\User;
 
 
@@ -20,14 +21,22 @@ class UserRepository implements UserRepositoryInterface
         return $this->model;
     }
 
-    public function findById(int $id): ?User
+    public function findById(int $id): User
     {
-        return $this->model->find($id);
+        $user =  $this->model->find($id);
+        if(!isset($user)){
+             Response::json(['message'=> " Task Not Fount"]);
+        }
+        return $user;
     }
 
     public function findByEmail(string $email): ?User
     {
-        return $this->model->where('email', $email)->first();
+        $user =  $this->model->where('email', $email)->first();
+        if(!isset($user)){
+            Response::json(['message'=> " Task Not Fount"]);
+       }
+       return $user;
     }
 
     public function create(array $data): User
@@ -51,7 +60,7 @@ class UserRepository implements UserRepositoryInterface
 
     public function all(): array
     {
-        return $this->model->findAll();
+          return $this->model->findAll();
     }
 
     public function paginate(int $page = 1, int $perPage = 15): array
@@ -71,7 +80,7 @@ class UserRepository implements UserRepositoryInterface
 
             $this->model::update($id, $data);
         } catch (\PDOException $e) {
-            throw new \Exception('There was an error updating the user.'. $e->getMessage());
+            throw new \Exception('There was an error updating the user.' . $e->getMessage());
         }
     }
 }

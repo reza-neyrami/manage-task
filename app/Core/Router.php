@@ -5,7 +5,6 @@ namespace App\Core;
 
 use App\Core\Services\Container;
 use App\Core\Services\Request;
-use App\Core\Services\Response;
 use Closure;
 use ReflectionMethod;
 
@@ -17,22 +16,23 @@ class Router
     private $groupOptions = [];
     private $parameters = [];
     protected $container;
+    protected $request;
     protected $prefix;
 
-    public function __construct(Container $container)
+    public function __construct(Container $container, Request $request)
     {
         $this->container = $container;
+        $this->request = $request;
     }
 
     public function addRoute($method, $uri, $callback, array $middleware = [])
     {
-        // If a prefix is set, add it to the URI
         if ($this->prefix) {
-            $uri = $this->prefix . $uri;
+            $uri = $this->prefix  . rtrim($uri, '/');
         }
-    
         $pattern = $this->convertUriToRegex($uri);
-    
+
+        $middleware = array_merge($this->middleware, $middleware);
         $this->routes[$method][$pattern] = [
             'action' => $callback,
             'middleware' => $middleware,
@@ -41,42 +41,52 @@ class Router
 
     public function convertUriToRegex($uri)
     {
-        return str_replace(['{', '}'], ['(?P<', '>[^/]+)'], $uri);
+        return str_replace(['{', '}'], ['(?P<', '>[^/]+)'], $uri) . '$';
     }
 
     public function run()
     {
-        $requestMethod = $_SERVER['REQUEST_METHOD'];
-        $requestUri = $_SERVER['REQUEST_URI'];
-        // Remove query string from URI.
+        $requestMethod = $this->request->Method();
+        $requestUri = $this->request->getPath();
+
         if (false !== ($pos = strpos($requestUri, '?'))) {
             $requestUri = substr($requestUri, 0, $pos);
         }
 
-        // Normalize route URIs with leading/trailing slashes.
         $requestUri = "/" . trim($requestUri, '/');
-        foreach ($this->routes[$requestMethod] ?? [] as $pattern => $route) {
+        $bestMatch = null;
+        $bestMatchLength = 0;
 
+        foreach ($this->routes[$requestMethod]  as $pattern => $route) {
             if (preg_match("~^$pattern~", $requestUri, $matches)) {
-
-                $parameterValues = array_slice($matches, 1);
-                $parameterNames = array_keys($matches);
-
-                $parameterValues = [];
-                foreach ($parameterNames as $name) {
-                    $parameterValues[$name] = $matches[$name];
-                }
-                $parameters = array_merge($parameterNames, $parameterValues, $this->parameters);
-                if ($this->runMiddleware($route['middleware'])) {
-                    $response = $this->invokeAction($route['action'], $parameters);
-                    Response::json($response);
-                    return;
+                $matchLength = strlen($matches[0]);
+                if ($matchLength > $bestMatchLength) {
+                    $bestMatch = $route;
+                    $bestMatchLength = $matchLength;
+                    if ($bestMatch) {
+                        $parameterValues = array_slice($matches, 1);
+                        $parameterNames = array_keys($matches);
+            
+                        $parameterValues = [];
+                        foreach ($parameterNames as $name) {
+                            $parameterValues[$name] = $matches[$name];
+                        }
+                        $parameters = array_merge($parameterNames, $parameterValues, $this->parameters);
+                        if ($this->runMiddleware($bestMatch['middleware'])) {
+                            $response = $this->invokeAction($bestMatch['action'], $parameters);
+                            echo $response;
+            
+                            return;
+                        }
+                    } else {
+                        throw new \RuntimeException('No route found for ' . $requestMethod . ' ' . $requestUri);
+                    }
                 }
             }
         }
-
-        throw new \RuntimeException('No route found for ' . $requestMethod . ' ' . $requestUri);
+        
     }
+
 
     private function runMiddleware(array $middlewares): bool
     {
@@ -86,11 +96,10 @@ class Router
             }
 
             if (!$middleware) {
-                return false;
+                throw new \RuntimeException('Middleware not found: ' . $middleware);
             }
 
-            // Pass Closure instance to middleware
-            $middleware->handle($_REQUEST, fn () => true);
+            $middleware->handle($this->request, fn () => true);
         }
 
         return true;
@@ -113,6 +122,7 @@ class Router
         }
 
         $mappedParams = array_map(function ($param) use ($parameters) {
+
             return $parameters[$param->getName()];
         }, $reflectionMethod->getParameters());
 
@@ -123,12 +133,12 @@ class Router
     {
         $this->groupOptions = array_merge($this->groupOptions, $options);
         $this->middleware = array_merge($this->middleware, $middleware);
-    
+
         // Add the prefix to each route in the group
         $this->prefix = $prefix;
-    
+
         call_user_func_array($callback, [$this]);
-    
+
         $this->groupOptions = [];
         $this->middleware = [];
         $this->parameters = [];

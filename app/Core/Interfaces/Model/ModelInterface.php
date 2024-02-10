@@ -2,9 +2,8 @@
 
 namespace App\Core\Interfaces\Model;
 
-use JsonSerializable;
 
-interface ModelInterface extends Arrayable, JsonSerializable
+interface ModelInterface 
 {
     public function getTableName(): string;
     public function save(): void;

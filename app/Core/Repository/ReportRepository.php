@@ -2,39 +2,39 @@
 
 namespace App\Core\Repository;
 
-use App\Core\Interfaces\Task\TaskRepositoryInterface;
+use App\Core\Interfaces\Report\ReportRepositoryInterface;
 use App\Core\Services\Response;
-use App\Model\Task;
+use App\Model\Report;
 
-class TaskRepository implements TaskRepositoryInterface
+ class ReportRepository implements ReportRepositoryInterface
 {
     private $model;
 
-    public function __construct(Task $task)
+    public function __construct(Report $Report)
     {
-        $this->model = $task;
+        $this->model = $Report;
     }
 
-    public function findById(int $id): Task
+    public function findById(int $id): Report
     {
-        $task =  $this->model->find($id);
-        if(!isset($task)){
+        $Report =  $this->model->find($id);
+        if(!isset($Report)){
              Response::json(['message'=> " User Not Fount"]);
         }
-        return $task;
+        return $Report;
   
     }
 
-    public function findByUserId(int $userId): ?Task
+    public function findByUserId(int $userId): ?Report
     {
-        $task = $this->model->where('userId', $userId)->first();
-        if(!isset($task)){
+        $Report = $this->model->where('userId', $userId)->first();
+        if(!isset($Report)){
             Response::json(['message'=> " User Not Fount"]);
        }
-       return $task;
+       return $Report;
     }
 
-    public function create(array $data): Task
+    public function create(array $data): Report
     {
         try {
             return $this->model->create($data);
@@ -51,9 +51,9 @@ class TaskRepository implements TaskRepositoryInterface
 
     public function delete(int $id): void
     {
-        $task = $this->findById($id);
-        if ($task) {
-            $task->delete();
+        $Report = $this->findById($id);
+        if ($Report) {
+            $Report->delete();
         }
     }
 
@@ -67,7 +67,7 @@ class TaskRepository implements TaskRepositoryInterface
         return $this->model->paginate($page, $limit);
     }
 
-    public function findBy(string $field, string $value): ?Task
+    public function findBy(string $field, string $value): ?Report
     {
         return $this->model->where($field, $value)->first();
     }

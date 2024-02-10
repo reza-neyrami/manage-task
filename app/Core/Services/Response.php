@@ -12,7 +12,7 @@ class Response
             echo json_encode($data);
             exit;
         }elseif (is_string($data)) {
-            header('Content-Type: text/plain');
+            header('Content-Type: application/json');
             http_response_code($statusCode);
             echo $data;
             exit;

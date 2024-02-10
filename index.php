@@ -4,43 +4,51 @@ use App\Core\Router;
 use App\Core\Services\Container;
 use App\Core\Services\Request;
 use App\Http\Middleware\JWTMiddleware;
+use App\Route\API;
 use Dotenv\Dotenv;
 
 require __DIR__ . "/vendor/autoload.php";
 
 $env = Dotenv::createImmutable(__DIR__);
 $env->load();
+
 // class Database {
 //     use DatabaseConnectionTrait;
 // }
 
-
 // $database = new Database();
+// $database->runSql();
 
 
 $container = new Container;
-// Bind your controllers to the container here
-$router = new Router($container);
+$request = new Request;
+$router = new Router($container, $request);
 
-$router->post('/auth', 'HomeController@index');
-$router->get('/home/{id}', 'UserController@show');
-$router->post('/create', 'UserController@create');
-$router->get('/users', 'UserController@all');
+ 
+$router->group('/tasks', [], [], function ($tasks) {
 
-
-$router->post('/login', 'AuthController@login');
-
-
-$router->group('/tasks', [], [], function ($router) {
-        $router->get('/', 'TaskController@getAllTasks');
-        $router->get('/{id}', 'TaskController@getTask');
-        $router->post('/', 'TaskController@createTask');
-        $router->put('/{id}', 'TaskController@updateTask');
-        $router->delete('/{id}', 'TaskController@deleteTask');
-        $router->get('/user/{userId}', 'TaskController@getTasksByUserId');
+    $tasks->get('/', 'TaskController@getAllTasks');
+    $tasks->get('/{id}', 'TaskController@getTask');
+    $tasks->post('/create', 'TaskController@createTask');
+    $tasks->put('/{id}', 'TaskController@updateTask');
+    $tasks->delete('/{id}', 'TaskController@deleteTask');
+    $tasks->get('/user/{userId}', 'TaskController@getTasksByUserId');
+    $tasks->get('/users', 'TaskController@getUsers');
 });
 
+$router->group('/users', [], [], function ($user) {
+    $user->get('/', 'UserController@getAllUsers');
+    $user->get('/{id}', 'UserController@getUser');
+    $user->post('/', 'UserController@createUser');
+    $user->put('/{id}', 'UserController@updateUser');
+    $user->delete('/{id}', 'UserController@deleteUser');
+});
 
-
+$router->group('/auth', [], [], function ($auth) {
+    $auth->post('/login', 'AuthController@login');
+    $auth->post('/register', 'AuthController@register');
+});
 
 $router->run();
+// $api = new API($router);
+// $api->Task();

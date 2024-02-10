@@ -9,35 +9,27 @@ use PDOException;
 
 trait DatabaseConnectionTrait
 {
-    protected $pdo;
+    protected static $pdo;
 
-
-    public function __construct()
+    public function getPDO()
     {
-        // $env = Dotenv::createImmutable(__DIR__);
-        // $env->load();
-        // var_dump($env);
-        $host = $_ENV['DB_HOST'];
-        $user = $_ENV['DB_USERNAME'];
-        $password = $_ENV['DB_PASSWORD'];
-        $database = $_ENV['DB_DATABASE'];
+        if (self::$pdo === null) {
+            $host = $_ENV['DB_HOST'];
+            $user = $_ENV['DB_USERNAME'];
+            $password = $_ENV['DB_PASSWORD'];
+            $database = $_ENV['DB_DATABASE'];
 
-        // $host = "127.0.0.1";
-        // $user = "root";
-        // $password = "secret";
-        // $database = "taskmanage";
-        try {
-
-            $this->pdo = new PDO("mysql:host=$host;dbname=$database", $user, $password);
-
-            $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-            error_log("Connection successful: Established connection to database.");
-        } catch (PDOException $e) {
-            echo "Connection failed: " . $e->getMessage();
+            try {
+                self::$pdo = new PDO("mysql:host=$host;dbname=$database", $user, $password);
+                self::$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+                error_log("Connection successful: Established connection to database.");
+            } catch (PDOException $e) {
+                echo "Connection failed: " . $e->getMessage();
+            }
         }
-    }
 
+        return self::$pdo;
+    }
     protected function executeTransaction(callable $callback): void
     {
         $this->pdo->beginTransaction();

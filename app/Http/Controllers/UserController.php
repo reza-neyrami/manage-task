@@ -2,9 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Core\Repository\AuthRepository;
+
 use App\Core\Repository\UserRepository;
-use App\Core\Services\JWTApi;
 use App\Core\Services\Request;
 use App\Core\Services\Response;
 
@@ -21,33 +20,88 @@ class UserController extends Controller
         $this->request = $request;
     }
 
-    public function show($id)
+    public function getUser(int $id)
     {
+       if(isset($id)){
 
-        $user = $this->userRepository->findById($id);
-
-        if (!$user) {
-            return Response::json(['message' => 'user not found'], 404);
+           return  $this->userRepository->findById($id);
         }
-        return $user;
+        
     }
 
-    public function create()
+    public function getUsersBySomeField(string $field, string $value)
     {
-        $user = $this->userRepository->create([
-            'username' => $this->request->get('username'),
-            'email' => $this->request->get('email'),
-            'password' =>  password_hash($this->request->get('password'), PASSWORD_DEFAULT),
-            'role' => $this->request->get('role') ?? 'programmer'
-        ]);
-
-        return Response::json($user, 201);
+        try {
+            $users = $this->userRepository->findBy($field, $value);
+            return Response::json($users, 200);
+        } catch (\Exception $e) {
+            return Response::json(['message' => 'There was an error getting the users. ,' . $e->getMessage()], 500);
+        }
     }
 
-    public function all(){
-        $user = $this->userRepository->all();
-        return Response::json($user, 201);
+    public function createUser()
+    {
+        try {
+            $user = $this->userRepository->create($this->getUserData());
+            return Response::json($user, 201);
+        } catch (\Exception $e) {
+            return Response::json(['message' => 'There was an error creating the user. ,' . $e->getMessage()], 500);
+        }
     }
 
-   
+    private function getUserData()
+    {
+        return $this->request->all();
+    }
+
+    public function updateUser(int $id)
+    {
+        try {
+            $data = array_merge($this->getUserData(), ['status' => 'active']);
+            $this->userRepository->update($id, $data);
+            return Response::json(['message' => 'User updated successfully.'], 200);
+        } catch (\Exception $e) {
+            return Response::json(['message' => 'There was an error updating the user. ,' . $e->getMessage()], 500);
+        }
+    }
+
+    public function deleteUser(int $id)
+    {
+        try {
+            $this->userRepository->delete($id);
+            return Response::json(['message' => 'User deleted successfully.'], 200);
+        } catch (\Exception $e) {
+            return Response::json(['message' => 'There was an error deleting the user. ,' . $e->getMessage()], 500);
+        }
+    }
+
+    public function getAllUsers()
+    {
+        try {
+            $users = $this->userRepository->all();
+            return Response::json($users, 200);
+        } catch (\Exception $e) {
+            return Response::json(['message' => 'There was an error getting the users. ,' . $e->getMessage()], 500);
+        }
+    }
+
+    public function getPaginatedUsers(int $limit = 15, int $page = 1)
+    {
+        try {
+            $users = $this->userRepository->paginate($limit, $page);
+            return Response::json($users, 200);
+        } catch (\Exception $e) {
+            return Response::json(['message' => 'There was an error getting the users. ,' . $e->getMessage()], 500);
+        }
+    }
+
+    public function getUserBy(string $field, string $value)
+    {
+        try {
+            $user = $this->userRepository->findBy($field, $value);
+            return Response::json($user, 200);
+        } catch (\Exception $e) {
+            return Response::json(['message' => 'There was an error getting the user. ,' . $e->getMessage()], 500);
+        }
+    }
 }

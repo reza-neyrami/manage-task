@@ -20,13 +20,33 @@ class Request
         return $jwt_token ?? $default;
     }
 
+    public function content()
+    {
+        return file_get_contents('php://input');
+    }
+
+    public function all()
+    {
+        return json_decode($this->content(), true);
+    }
+
+    public function input(...$keys)
+    {
+        $data = json_decode($this->content(), true);
+        $result = [];
+        foreach ($keys as $key) {
+            $result[$key] = $data[$key] ?? null;
+        }
+        return $result;
+    }
+
     public function get($key, $default = null)
     {
 
         return isset($this->params[$key]) ? $this->params[$key] : $default;
     }
 
-    public function all()
+    public function request()
     {
         return $this->params;
     }
@@ -106,5 +126,17 @@ class Request
     public function __toString()
     {
         return json_encode($this->params);
+    }
+
+    public function getUri()
+    {
+        return $_SERVER['REQUEST_URI'];
+    }
+
+    public function getPath()
+    {
+        $uri = $this->getUri();
+        $path = parse_url($uri, PHP_URL_PATH);
+        return $path;
     }
 }

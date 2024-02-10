@@ -7,9 +7,9 @@ use App\Core\TraitS\DatabaseConnectionTrait;
 use PDO;
 
 
-abstract class Model  implements ModelInterface
+abstract class Model implements ModelInterface
 {
-    use Arrayable, DatabaseConnectionTrait;
+    use  DatabaseConnectionTrait, Arrayable;
     protected $fillable = [];
     protected $toArray = [];
     protected $bindings = [];
@@ -17,6 +17,10 @@ abstract class Model  implements ModelInterface
     protected $sql;
     public $id;
 
+    public function __construct()
+    {
+        $this->getPDO();
+    }
 
     public function getTableName(): string
     {
@@ -27,7 +31,7 @@ abstract class Model  implements ModelInterface
     {
         $model = new static();
         $sql = "SELECT * FROM {$model->table} WHERE id = ?";
-        $stmt = $model->pdo->prepare($sql);
+        $stmt = $model::$pdo->prepare($sql);
         $stmt->bindValue(1, $id, PDO::PARAM_INT);
         $stmt->execute();
 
@@ -38,7 +42,7 @@ abstract class Model  implements ModelInterface
     {
         $model = new static();
         $sql = "SELECT * FROM {$model->table}";
-        $stmt = $model->pdo->query($sql);
+        $stmt = $model::$pdo->query($sql);
 
         return $stmt->fetchAll(PDO::FETCH_CLASS, static::class);
     }
@@ -61,7 +65,7 @@ abstract class Model  implements ModelInterface
                 $sql = "INSERT INTO {$this->table} (" . implode(', ', $properties) . ") VALUES ($placeholders)";
             }
 
-            $stmt = $this->pdo->prepare($sql);
+            $stmt = $this->getPDO()->prepare($sql);
             $stmt->execute($values);
 
             if (!isset($this->id)) {
@@ -82,7 +86,7 @@ abstract class Model  implements ModelInterface
     {
         $model = new static();
         $sql = "SELECT * FROM {$model->table} ORDER BY id ASC LIMIT 1";
-        $stmt = $model->pdo->query($sql);
+        $stmt = $model::$pdo->query($sql);
         return $stmt->fetchObject(static::class) ?: null;
     }
 
@@ -97,7 +101,7 @@ abstract class Model  implements ModelInterface
             }
             $values = array_merge(array_values($data), [$id]);
             $sql = "UPDATE {$model->table} SET " . implode(', ', $set) . " WHERE id = ?";
-            $stmt = $model->pdo->prepare($sql);
+            $stmt = $model::$pdo->prepare($sql);
             $stmt->execute($values);
         });
     }
@@ -125,7 +129,7 @@ abstract class Model  implements ModelInterface
         $this->bindings[] = $value;
         return $this;
     }
-    
+
 
 
     public static function deleteId(int $id): void
@@ -141,7 +145,7 @@ abstract class Model  implements ModelInterface
         $model = new static();
         $offset = ($page - 1) * $perPage;
         $sql = "SELECT * FROM {$model->table} LIMIT $perPage OFFSET $offset";
-        $stmt = $model->pdo->query($sql);
+        $stmt = $model::$pdo->query($sql);
         return $stmt->fetchAll(PDO::FETCH_CLASS, static::class);
     }
 
@@ -153,5 +157,10 @@ abstract class Model  implements ModelInterface
     protected function getInsertProperties(): array
     {
         return array_filter($this->fillable, fn ($p) => $p !== 'id');
+    }
+
+    public function getFilable()
+    {
+        return $this->fillable;
     }
 }

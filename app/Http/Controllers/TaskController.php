@@ -19,21 +19,12 @@ class TaskController extends Controller
         $this->taskRepository = $taskRepository;
         $this->request = $request;
     }
-
+   
     public function getTask(int $id)
     {
-        try {
-            $task = $this->taskRepository->findById($id);
+        // echo $id;
+        return  $this->taskRepository->findById($id);
 
-            if (!$task) {
-                return Response::json(['message' => 'task not found'], 404);
-            }
-            return Response::json($task, 200);
-            // Render the task data in your view
-        } catch (\Exception $e) {
-            // Handle exception here
-            return Response::json(['message' => 'There was an error creating the task. ,' . $e->getMessage()], 500);
-        }
     }
 
     public function getTasksByUserId(int $userId)
@@ -50,24 +41,32 @@ class TaskController extends Controller
 
     public function createTask()
     {
-       
-            $task = $this->taskRepository->create($this->getTaskData());
-            return $task;
-            // return Response::json($task, 201);
+
+        $task = $this->taskRepository->create($this->getTaskData());
+        return $task;
+        // return Response::json($task, 201);
     }
 
     public function updateTask($id)
     {
-        var_dump($id);
-        // try {
-        //     $this->taskRepository->update($id, $this->getTaskData());
-        //     return Response::json(['message' => 'Task updated successfully.'], 200);
-        //     // Redirect to the task view or show a success message
-        // } catch (\Exception $e) {
-        //     // Handle exception here
-        //     return Response::json(['message' => 'There was an error updating the task. ,' . $e->getMessage()], 500);
-        // }
+        try {
+            $userid = Auth::user()->id;
+            $data = array_merge($this->getTaskUpData(), ['status' => 'todo', 'userId' => $userid]);
+            $update  =  $this->taskRepository->update(intval($id), $data);
+            return Response::json(['message' => 'Task updated successfully.' . $update], 200);
+            // Redirect to the task view or show a success message
+        } catch (\Exception $e) {
+            // Handle exception here
+            return Response::json(['message' => 'There was an error updating the task. ,' . $e->getMessage()], 500);
+        }
     }
+
+
+    private function getTaskUpData()
+    {
+        return  $this->request->all();
+    }
+
 
     public function deleteTask(int $id)
     {
