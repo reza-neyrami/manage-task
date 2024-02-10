@@ -3,7 +3,6 @@
 namespace App\Model;
 
 use App\Core\Interfaces\Model\Model;
-use App\Core\Services\Auth;
 use App\Core\Services\JWTApi;
 use PDO;
 
@@ -40,7 +39,7 @@ class Report extends Model
         $currentUserId = $decoded_token->sub;
 
         // Get the user ID of the uploader from the database
-        $sql = "SELECT userId FROM files WHERE id = ?";
+        $sql = "SELECT userId FROM reports WHERE id = ?";
         $stmt = $this->pdo->prepare($sql);
         $stmt->bindValue(1, $fileId);
         $stmt->execute();
