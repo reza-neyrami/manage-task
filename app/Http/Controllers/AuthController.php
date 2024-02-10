@@ -1,5 +1,8 @@
-
 <?php
+
+namespace App\Http\Controllers;
+
+
 
 use App\Core\Repository\AuthRepository;
 use App\Core\Services\JWTApi;
@@ -7,7 +10,7 @@ use App\Core\Services\Request;
 use App\Core\Services\Response;
 use App\Http\Controllers\Controller;
 
-class UserController extends Controller
+class AuthController extends Controller
 {
     private $authRepositroy;
     protected $request;
@@ -35,8 +38,16 @@ class UserController extends Controller
     }
 
 
-    public function logout(){
-        $logout =  $this->authRepositroy->logout();
+    public function logout()
+    {
+
+        $jwt_token = $this->request->header('Authorization');
+        if (!isset($jwt_token)) {
+            return Response::json([
+                "message" => "token not found",
+            ], 404);
+        }
+        $logout =  $this->authRepositroy->logout($jwt_token);
         if ($logout['status'] == false) {
             return Response::json($logout, 401);
         }
@@ -45,7 +56,8 @@ class UserController extends Controller
         ], 200);
     }
 
-    public function register(){
+    public function register()
+    {
         $register =  $this->authRepositroy->register([
             'username' => $this->request->get('username'),
             'email' => $this->request->get('email'),
@@ -55,8 +67,10 @@ class UserController extends Controller
         if ($register['status'] == false) {
             return Response::json($register, 401);
         }
+        $jwt_token = JWTApi::generate_jwt_token($register['user_id']);
         return Response::json([
             "message" => $register,
+            "access_token" => $jwt_token
         ], 200);
     }
 }

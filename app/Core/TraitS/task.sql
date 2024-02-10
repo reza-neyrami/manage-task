@@ -27,7 +27,7 @@ CREATE TABLE tasks (
     startDate DATE,
     endDate DATE,
     status ENUM('todo', 'doing', 'done') NOT NULL,
-    userId INT,
+    userId INT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (id),

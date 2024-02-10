@@ -3,6 +3,7 @@
 namespace App\Core\Repository;
 
 use App\Core\Interfaces\Task\TaskRepositoryInterface;
+use App\Core\Services\Response;
 use App\Model\Task;
 
 class TaskRepository implements TaskRepositoryInterface
@@ -30,6 +31,7 @@ class TaskRepository implements TaskRepositoryInterface
     public function create(array $data): Task
     {
         return $this->model->create($data);
+
     }
 
     public function update(int $id, array $data): void

@@ -5,6 +5,7 @@ namespace App\Core;
 
 use App\Core\Services\Container;
 use App\Core\Services\Request;
+use App\Core\Services\Response;
 use Closure;
 use ReflectionMethod;
 
@@ -16,6 +17,7 @@ class Router
     private $groupOptions = [];
     private $parameters = [];
     protected $container;
+    protected $prefix;
 
     public function __construct(Container $container)
     {
@@ -24,8 +26,13 @@ class Router
 
     public function addRoute($method, $uri, $callback, array $middleware = [])
     {
+        // If a prefix is set, add it to the URI
+        if ($this->prefix) {
+            $uri = $this->prefix . $uri;
+        }
+    
         $pattern = $this->convertUriToRegex($uri);
-
+    
         $this->routes[$method][$pattern] = [
             'action' => $callback,
             'middleware' => $middleware,
@@ -62,7 +69,7 @@ class Router
                 $parameters = array_merge($parameterNames, $parameterValues, $this->parameters);
                 if ($this->runMiddleware($route['middleware'])) {
                     $response = $this->invokeAction($route['action'], $parameters);
-                    echo $response;
+                    Response::json($response);
                     return;
                 }
             }
@@ -71,21 +78,19 @@ class Router
         throw new \RuntimeException('No route found for ' . $requestMethod . ' ' . $requestUri);
     }
 
-  
-
     private function runMiddleware(array $middlewares): bool
     {
         foreach ($middlewares as $middleware) {
             if (is_string($middleware)) {
                 $middleware = $this->container->make($middleware);
             }
-    
+
             if (!$middleware) {
                 return false;
             }
-    
+
             // Pass Closure instance to middleware
-            $middleware->handle($_REQUEST, fn() => true);
+            $middleware->handle($_REQUEST, fn () => true);
         }
 
         return true;
@@ -118,12 +123,16 @@ class Router
     {
         $this->groupOptions = array_merge($this->groupOptions, $options);
         $this->middleware = array_merge($this->middleware, $middleware);
-
-        call_user_func_array([$this, 'addRoutes'], func_get_args());
-
+    
+        // Add the prefix to each route in the group
+        $this->prefix = $prefix;
+    
+        call_user_func_array($callback, [$this]);
+    
         $this->groupOptions = [];
         $this->middleware = [];
         $this->parameters = [];
+        $this->prefix = '';
     }
 
     public function get($uri, $callback, array $middleware = [])

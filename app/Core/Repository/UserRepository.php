@@ -15,7 +15,8 @@ class UserRepository implements UserRepositoryInterface
         $this->model = $user;
     }
 
-    public function model(){
+    public function model()
+    {
         return $this->model;
     }
 
@@ -31,8 +32,14 @@ class UserRepository implements UserRepositoryInterface
 
     public function create(array $data): User
     {
-        return $this->model->create($data);
+        try {
+            return $this->model->create($data);
+        } catch (\PDOException $e) {
+
+            throw new \Exception('There was an error creating the user.');
+        }
     }
+
 
     public function delete(int $id): void
     {
@@ -60,6 +67,11 @@ class UserRepository implements UserRepositoryInterface
 
     public function update(int $id, array $data): void
     {
-         $this->model::update($id, $data);
+        try {
+
+            $this->model::update($id, $data);
+        } catch (\PDOException $e) {
+            throw new \Exception('There was an error updating the user.'. $e->getMessage());
+        }
     }
 }

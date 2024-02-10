@@ -28,6 +28,8 @@ class AuthRepository implements AuthRepositoryInterface
        return ['message' => 'user logged in successfully', 'user_id'=>$user->id,'status' => true];
     }
 
+
+
     public function register(array $data): array
     {
         $user = $this->model->where('email', $data['email'])->first();
@@ -47,7 +49,7 @@ class AuthRepository implements AuthRepositoryInterface
         if ($decoded['status'] == false) {
             return ['message' => 'invalid token'];
         }
-        //todo: delete token from database ...of course you can add token to model user table and delete it from there
+        // TODO delete token from database ...of course you can add token to model user table and delete it from there
         $user = $this->model->find($decoded['data']['user_id']);
         if (!$user) {
             return ['message' => 'user not found'];

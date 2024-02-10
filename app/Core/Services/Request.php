@@ -3,7 +3,7 @@
 namespace App\Core\Services;
 
 
-class Request 
+class Request
 {
     private $params;
 
@@ -13,11 +13,13 @@ class Request
         header('Content-Type: application/json');
     }
 
-    public function getHeader($key, $default = null)
+    public function header($key, $default = null)
     {
-        return isset($this->params['header'][$key]) ? $this->params['header'][$key] : $default;
+        $headers = apache_request_headers();
+        $jwt_token = $headers[$key] ?? null;
+        return $jwt_token ?? $default;
     }
-    
+
     public function get($key, $default = null)
     {
 
@@ -106,4 +108,3 @@ class Request
         return json_encode($this->params);
     }
 }
-

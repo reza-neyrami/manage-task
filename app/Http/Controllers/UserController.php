@@ -13,13 +13,11 @@ use App\Core\Services\Response;
 class UserController extends Controller
 {
     private $userRepository;
-    private $authRepositroy;
     protected $request;
 
-    public function __construct(UserRepository $userRepository, AuthRepository $authRepositroy, Request $request)
+    public function __construct(UserRepository $userRepository, Request $request)
     {
         $this->userRepository = $userRepository;
-        $this->authRepositroy = $authRepositroy;
         $this->request = $request;
     }
 
@@ -43,6 +41,11 @@ class UserController extends Controller
             'role' => $this->request->get('role') ?? 'programmer'
         ]);
 
+        return Response::json($user, 201);
+    }
+
+    public function all(){
+        $user = $this->userRepository->all();
         return Response::json($user, 201);
     }
 
