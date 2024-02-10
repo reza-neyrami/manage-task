@@ -9,7 +9,7 @@ use App\Core\Services\Response;
 
 
 
-class UserController extends Controller
+class UserController extends BaseController
 {
     private $userRepository;
     protected $request;

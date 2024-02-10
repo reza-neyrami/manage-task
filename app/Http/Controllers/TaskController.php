@@ -9,7 +9,7 @@ use App\Core\Services\Response;
 
 
 
-class TaskController extends Controller
+class TaskController extends BaseController
 {
     private $taskRepository;
     protected $request;
@@ -19,12 +19,11 @@ class TaskController extends Controller
         $this->taskRepository = $taskRepository;
         $this->request = $request;
     }
-   
+
     public function getTask(int $id)
     {
         // echo $id;
         return  $this->taskRepository->findById($id);
-
     }
 
     public function getTasksByUserId(int $userId)
@@ -41,7 +40,9 @@ class TaskController extends Controller
 
     public function createTask()
     {
-
+        if (Auth::user()->role !== 'admin') {
+            Response::json(['message' => 'شما دسترسی به  این بخش رو ندارید'], 403);
+        }
         $task = $this->taskRepository->create($this->getTaskData());
         return $task;
         // return Response::json($task, 201);

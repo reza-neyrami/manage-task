@@ -9,7 +9,7 @@ use App\Core\Services\Response;
 
 
 
-class TaskController extends Controller
+class TaskController extends BaseController
 {
     private $reportRepository;
     protected $request;

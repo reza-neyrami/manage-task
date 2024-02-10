@@ -8,9 +8,9 @@ use App\Core\Repository\AuthRepository;
 use App\Core\Services\JWTApi;
 use App\Core\Services\Request;
 use App\Core\Services\Response;
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\BaseController;
 
-class AuthController extends Controller
+class AuthController extends BaseController
 {
     private $authRepositroy;
     protected $request;

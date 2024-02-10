@@ -5,10 +5,9 @@ namespace App\Http\Controllers;
 use App\Core\Services\Auth;
 use App\Core\Services\Request;
 use App\Core\Services\Response;
-use App\Model\User;
 use Exception;
 
-class HomeController extends Controller
+class HomeController extends BaseController
 {
     protected $request;
     public function __construct(Request $request)
