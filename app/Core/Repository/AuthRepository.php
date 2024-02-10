@@ -38,4 +38,22 @@ class AuthRepository implements AuthRepositoryInterface
         $this->model->create($data);
         return ['message' => 'user created successfully', 'status' => true];
     }
+
+    public function logout(string $token): array
+    {
+
+        $decoded = JWTApi::decode_jwt_token($token);
+
+        if ($decoded['status'] == false) {
+            return ['message' => 'invalid token'];
+        }
+        //todo: delete token from database ...of course you can add token to model user table and delete it from there
+        $user = $this->model->find($decoded['data']['user_id']);
+        if (!$user) {
+            return ['message' => 'user not found'];
+        }
+        $user->token = null;
+        $user->save();
+        return ['message' => 'user logged out successfully'];
+    }
 }

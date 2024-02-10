@@ -145,8 +145,6 @@ abstract class Model  implements ModelInterface
         return $stmt->fetchAll(PDO::FETCH_CLASS, static::class);
     }
 
-
-
     protected function getUpdateProperties(): array
     {
         return array_filter($this->fillable, fn ($p) => $p !== 'id' && $p !== 'created_at' && $p !== 'updated_at');

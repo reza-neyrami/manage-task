@@ -46,21 +46,5 @@ class UserController extends Controller
         return Response::json($user, 201);
     }
 
-    public function login()
-    {
-        $login =  $this->authRepositroy->login([
-            'email' => $this->request->get('email'),
-            'password' => $this->request->get('password')
-        ]);
-        if ($login['status'] == false) {
-            return Response::json($login, 401);
-        }
- 
-        $jwt_token = JWTApi::generate_jwt_token($login['user_id'], $_ENV['JWT_SECRET']);
-        return Response::json([
-            'access_token' => $jwt_token,
-            "message" => $login,
-        ], 200);
-        // var_dump($this->request->get('email'));
-    }
+   
 }
