@@ -3,6 +3,7 @@
 namespace App\Model;
 
 use App\Core\Interfaces\Model\Model;
+use Exception;
 use PDO;
 
 class Task extends Model
@@ -12,7 +13,27 @@ class Task extends Model
     protected $fillable = ['name', 'description', 'startDate', 'endDate', 'status', 'userId'];
     protected $toArray = ['id', 'name', 'description', 'startDate', 'endDate', 'status', 'userId'];
 
+    const STATUS_TODO = 'todo';
+    const STATUS_IN_PROGRESS = 'doing';
+    const STATUS_DONE = 'done';
 
+    private $status = self::STATUS_TODO;
+
+    public function start()
+    {
+        if ($this->status != self::STATUS_TODO) {
+            throw new Exception('وظیفه باید در حالت "برای انجام" باشد تا بتوان آن را شروع کرد.');
+        }
+        $this->status = self::STATUS_IN_PROGRESS;
+    }
+
+    public function finish()
+    {
+        if ($this->status != self::STATUS_IN_PROGRESS) {
+            throw new Exception('وظیفه باید در حالت "در حال انجام" باشد تا بتوان آن را به پایان رساند.');
+        }
+        $this->status = self::STATUS_DONE;
+    }
     public function users()
     {
         $sql = "SELECT users.* FROM users
@@ -23,7 +44,6 @@ class Task extends Model
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_CLASS, User::class);
     }
-
 
     public function reports()
     {
