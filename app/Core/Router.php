@@ -34,19 +34,33 @@ class Router
         $this->routes[$method][$pattern] = [
             'action' => $callback,
             'middleware' => $middleware,
+            'length' => strlen($uri), // اضافه کردن طول مسیر
         ];
+
+        // مرتب‌سازی مسیرها بر اساس طول آن‌ها، به طور نزولی
+        uasort($this->routes[$method], function ($a, $b) {
+            return $b['length'] - $a['length'];
+        });
     }
 
-    public function convertUriToRegex($uri)
-    {
-        $pattern = preg_quote($uri, '#');
-        $pattern = str_replace(['\{', '\}'], ['{', '}'], $pattern);
-    
-        // اضافه کردن $ به انتهای الگو برای پایان خط
-        $pattern .= '$';
-    
-        return $pattern;
-    }
+        // این کمی بهتره
+        public function convertUriToRegex($uri)
+        {
+            $pattern = preg_replace_callback('/\{(\w+):(\w+)\}/', function ($matches) {
+                if ($matches[2] == 'int') {
+                    return "(?P<{$matches[1]}>\d+)";
+                } else if ($matches[2] == 'string') {
+                    return "(?P<{$matches[1]}>[^\/]+)";
+                }
+            }, $uri);
+            
+            // اضافه کردن $ به انتهای الگو برای پایان خط
+            $pattern .= '$';
+            
+            return "#^{$pattern}#";
+        }
+        
+        
 
     public function run()
     {
@@ -62,7 +76,8 @@ class Router
         $bestMatchLength = 0;
 
         foreach ($this->routes[$requestMethod] ?? [] as $pattern => $route) {
-            if (preg_match("~^$pattern~", $requestUri, $matches)) {
+            if (preg_match($pattern, $requestUri, $matches)) {
+                 var_dump($matches);
                 $matchLength = strlen($matches[0]);
                 if ($matchLength > $bestMatchLength) {
                     $bestMatch = $route;

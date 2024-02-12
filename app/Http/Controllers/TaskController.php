@@ -33,6 +33,7 @@ class TaskController extends BaseController
 
     public function taskByAuthId()
     {
+        // var_dump(Auth::user());
         $task = $this->taskRepository->getByUserId(Auth::user()->id);
        return $task;
     }

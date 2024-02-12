@@ -8,6 +8,7 @@ interface ModelInterface
     public function getTableName(): string;
     public function save(): void;
     public function delete(): void;
+    public  function getAll(): array;
     // ... سایر متدهای کاربردی
 
     public static function find(int $id);

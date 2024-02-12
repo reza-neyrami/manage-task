@@ -6,10 +6,9 @@ use App\Core\TraitS\Arrayable;
 use App\Core\TraitS\DatabaseConnectionTrait;
 use PDO;
 
-
 abstract class Model implements ModelInterface
 {
-    use  DatabaseConnectionTrait, Arrayable;
+    use DatabaseConnectionTrait, Arrayable;
     protected $fillable = [];
     protected $toArray = [];
     protected $bindings = [];
@@ -47,12 +46,31 @@ abstract class Model implements ModelInterface
         return $stmt->fetchAll(PDO::FETCH_CLASS, static::class);
     }
 
+    public function getAll(): array
+    {
+        $model = new static();
+        $sql = "SELECT * FROM {$model->table}";
+        if (isset($this->sql)) {
+            $sql = $this->sql;
+        }
+
+        $stmt = $model::$pdo->prepare($sql);
+        foreach ($this->bindings as $key => $value) {
+            $stmt->bindValue($key + 1, $value);
+        }
+
+        $stmt->execute();
+        unset($this->sql, $this->bindings);
+
+        return $stmt->fetchAll(PDO::FETCH_CLASS, static::class);
+    }
+
     public function save(): void
     {
         $this->executeTransaction(function () {
             $properties = $this->getUpdateProperties();
             $placeholders = implode(', ', array_fill(0, count($properties), '?'));
-            $values = array_map(fn ($p) => $this->{$p}, $properties);
+            $values = array_map(fn($p) => $this->{$p}, $properties);
 
             if (isset($this->id)) {
                 $set = [];
@@ -130,8 +148,6 @@ abstract class Model implements ModelInterface
         return $this;
     }
 
-
-
     public static function deleteId(int $id): void
     {
         $model = static::find($id);
@@ -151,19 +167,18 @@ abstract class Model implements ModelInterface
 
     protected function getUpdateProperties(): array
     {
-        return array_filter($this->fillable, fn ($p) => $p !== 'id' && $p !== 'created_at' && $p !== 'updated_at');
+        return array_filter($this->fillable, fn($p) => $p !== 'id' && $p !== 'created_at' && $p !== 'updated_at');
     }
 
     protected function getInsertProperties(): array
     {
-        return array_filter($this->fillable, fn ($p) => $p !== 'id');
+        return array_filter($this->fillable, fn($p) => $p !== 'id');
     }
 
     public function getFilable()
     {
         return $this->fillable;
     }
-
 
     public function exists(int $id)
     {

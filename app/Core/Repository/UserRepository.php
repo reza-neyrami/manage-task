@@ -25,7 +25,7 @@ class UserRepository implements UserRepositoryInterface
     {
         $user =  $this->model->find($id);
         if(!isset($user)){
-             Response::json(['message'=> " Task Not Fount"]);
+             Response::json(['message'=> " User Not Fount"]);
         }
         return $user;
     }
@@ -34,7 +34,7 @@ class UserRepository implements UserRepositoryInterface
     {
         $user =  $this->model->where('email', $email)->first();
         if(!isset($user)){
-            Response::json(['message'=> " Task Not Fount"]);
+            Response::json(['message'=> " User Not Fount"]);
        }
        return $user;
     }
@@ -71,6 +71,10 @@ class UserRepository implements UserRepositoryInterface
     public function findBy(string $field, string $value): ?User
     {
         return $this->model->where($field, $value)->first();
+    }
+    public function getBy(string $field, string $value)
+    {
+        return $this->model->where($field, $value)->getAll();
     }
 
 

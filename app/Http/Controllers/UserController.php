@@ -2,13 +2,10 @@
 
 namespace App\Http\Controllers;
 
-
 use App\Core\Repository\UserRepository;
 use App\Core\Services\Auth;
 use App\Core\Services\Request;
 use App\Core\Services\Response;
-
-
 
 class UserController extends BaseController
 {
@@ -23,11 +20,11 @@ class UserController extends BaseController
 
     public function getUser(int $id)
     {
-       if(isset($id)){
+        if (isset($id)) {
 
-           return  $this->userRepository->findById($id);
+            return $this->userRepository->findById($id);
         }
-        
+
     }
 
     public function getUsersBySomeField(string $field, string $value)
@@ -55,10 +52,25 @@ class UserController extends BaseController
         return $this->request->all();
     }
 
-    public function gettaskByUser(){
+    public function gettaskByUser()
+    {
         $user = Auth::user();
         $tasks = $user->task();
-        return Response::json($tasks,200);
+        return Response::json($tasks, 200);
+    }
+
+    public function getUserSkile(string $skile)
+    {
+        $user = Auth::user();
+        if ($user->role != 'admin') {
+            return Response::json(['message' => 'شما به این بخش دسترسی ندارید'], 400);
+        } 
+        
+        // var_dump('salam');
+        $skilesUsers = $this->userRepository->getBy('role', $skile);
+
+
+        return Response::json($skilesUsers, 200);
     }
 
     public function updateUser(int $id)
