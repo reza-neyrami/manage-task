@@ -17,7 +17,7 @@ class Task extends Model
     const STATUS_IN_PROGRESS = 'doing';
     const STATUS_DONE = 'done';
 
-    private $status = self::STATUS_TODO;
+    public $status;
 
     public function start()
     {
