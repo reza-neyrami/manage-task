@@ -26,41 +26,42 @@ class Router
 
     public function addRoute($method, $uri, $callback, array $middleware = [])
     {
+        $prefix = '';
         if ($this->prefix) {
             $uri = $this->prefix . rtrim($uri, '/');
+            $prefix = explode('/', $this->prefix)[0];
         }
         $pattern = $this->convertUriToRegex($uri);
         $middleware = array_merge($this->middleware, $middleware);
         $this->routes[$method][$pattern] = [
             'action' => $callback,
             'middleware' => $middleware,
-            'length' => strlen($uri), // اضافه کردن طول مسیر
+            'prefix' => $prefix, // اضافه کردن پیشوند
         ];
-
-        // مرتب‌سازی مسیرها بر اساس طول آن‌ها، به طور نزولی
+    
+        // مرتب‌سازی مسیرها بر اساس پیشوند، به طور صعودی
         uasort($this->routes[$method], function ($a, $b) {
-            return $b['length'] - $a['length'];
+            return strcmp($a['prefix'], $b['prefix']);
         });
     }
+    
 
-        // این کمی بهتره
-        public function convertUriToRegex($uri)
-        {
-            $pattern = preg_replace_callback('/\{(\w+):(\w+)\}/', function ($matches) {
-                if ($matches[2] == 'int') {
-                    return "(?P<{$matches[1]}>\d+)";
-                } else if ($matches[2] == 'string') {
-                    return "(?P<{$matches[1]}>[^\/]+)";
-                }
-            }, $uri);
-            
-            // اضافه کردن $ به انتهای الگو برای پایان خط
-            $pattern .= '$';
-            
-            return "#^{$pattern}#";
-        }
-        
-        
+    // این کمی بهتره
+    public function convertUriToRegex($uri)
+    {
+        $pattern = preg_replace_callback('/\{(\w+):(\w+)\}/', function ($matches) {
+            if ($matches[2] == 'int') {
+                return "(?P<{$matches[1]}>\d+)";
+            } else if ($matches[2] == 'string') {
+                return "(?P<{$matches[1]}>[^\/]+)";
+            }
+        }, $uri);
+
+        // اضافه کردن $ به انتهای الگو برای پایان خط
+        $pattern .= '$';
+
+        return "#^{$pattern}#";
+    }
 
     public function run()
     {
@@ -77,7 +78,6 @@ class Router
 
         foreach ($this->routes[$requestMethod] ?? [] as $pattern => $route) {
             if (preg_match($pattern, $requestUri, $matches)) {
-                 var_dump($matches);
                 $matchLength = strlen($matches[0]);
                 if ($matchLength > $bestMatchLength) {
                     $bestMatch = $route;
@@ -151,17 +151,24 @@ class Router
     {
         $this->groupOptions = array_merge($this->groupOptions, $options);
         $this->middleware = array_merge($this->middleware, $middleware);
-
+    
         // Add the prefix to each route in the group
         $this->prefix = $prefix;
-
+    
+        // Extract the first name from the prefix
+        $firstName = explode('/', trim($prefix, '/'))[0];
+    
         call_user_func_array($callback, [$this]);
-
+    
+        // Now you can use $firstName to sort your routes
+        // ...
+    
         $this->groupOptions = [];
         $this->middleware = [];
         $this->parameters = [];
         $this->prefix = '';
     }
+    
 
     public function get($uri, $callback, array $middleware = [])
     {
