@@ -33,8 +33,10 @@ class TaskController extends BaseController
 
     public function taskByAuthId()
     {
-        // var_dump(Auth::user());
         $task = $this->taskRepository->getByUserId(Auth::user()->id);
+        if (!$task) {
+             Response::json(["message"=> "no any task"],404);
+        }
        return $task;
     }
 
@@ -42,11 +44,11 @@ class TaskController extends BaseController
     {
         try {
             $tasks = $this->taskRepository->findByUserId($userId);
-            return Response::json($tasks, 200);
+             Response::json($tasks, 200);
             // Render the tasks data in your view
         } catch (\Exception $e) {
             // Handle exception here
-            return Response::json(['message' => 'There was an error creating the task. ,' . $e->getMessage()], 500);
+             Response::json(['message' => 'There was an error creating the task. ,' . $e->getMessage()], 500);
         }
     }
 
@@ -145,9 +147,7 @@ class TaskController extends BaseController
         if ($decoded_token->role != 'admin') {
             return Response::json(['message' => " Access Denied"]);
         }
-        $userIds = $this->request->input('users');
-        // $this->dd($userIds);
-        // Assign the task to each user
+        $userIds = $this->request->input('userIds');
         foreach ($userIds as $userId) {
             $this->userTaskRepository->assignToUsers($taskId, $userId);
         }

@@ -66,7 +66,6 @@ class UserController extends BaseController
             return Response::json(['message' => 'شما به این بخش دسترسی ندارید'], 400);
         } 
         
-        // var_dump('salam');
         $skilesUsers = $this->userRepository->getBy('role', $skile);
 
 
