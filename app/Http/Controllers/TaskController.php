@@ -65,31 +65,22 @@ class TaskController extends BaseController
         $task = $this->taskRepository->create($data);
         return $task;
     }
-
     public function updateTask($id)
     {
         try {
             $userid = Auth::user();
             $data = $this->getTaskUpData();
             $task = $this->taskRepository->findById(intval($id));
-    
-            if ($data['status'] == Task::STATUS_IN_PROGRESS && $task->status != Task::STATUS_TODO) {
-                throw new Exception('وظیفه باید در حالت "برای انجام" باشد تا بتوان آن را به حالت "در حال انجام" تغییر داد.');
-            } elseif ($data['status'] == Task::STATUS_DONE && $task->status != Task::STATUS_IN_PROGRESS) {
-                throw new Exception('وظیفه باید در حالت "در حال انجام" باشد تا بتوان آن را به حالت "انجام شده" تغییر داد.');
-            } elseif ($data['status'] == Task::STATUS_TODO) {
-                throw new Exception('وظیفه نمی‌تواند به حالت "برای انجام" برگردد.');
+            if ($userid->role !== 'admin' || $userid->id != $task->userId) {
+                throw new Exception('شما به این بخش دسترسی ندارید ');
             }
-    
-            if ($data['status'] == Task::STATUS_IN_PROGRESS) {
-                $task->start();
-            } elseif ($data['status'] == Task::STATUS_DONE) {
-                $task->finish();
-            }
+            // تغییر وضعیت
+            $task->changeStatus($data['status']);
+
             $data = array_merge($data, ["userId" => $userid->id]);
-    
+
             $this->taskRepository->update(intval($id), $data);
-    
+
             return Response::json(['message' => 'Task updated successfully.'], 200);
             // Redirect to the task view or show a success message
         } catch (Exception $e) {
@@ -97,8 +88,6 @@ class TaskController extends BaseController
             return Response::json(['message' => 'There was an error updating the task. ,' . $e->getMessage()], 500);
         }
     }
-    
-    
 
     private function getTaskUpData()
     {

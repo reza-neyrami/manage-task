@@ -34,6 +34,20 @@ class Task extends Model
         }
         $this->status = self::STATUS_DONE;
     }
+
+    public function changeStatus(string $newStatus)
+    {
+        if ($newStatus == self::STATUS_IN_PROGRESS && $this->status != self::STATUS_TODO) {
+            throw new Exception('وظیفه باید در حالت "برای انجام" باشد تا بتوان آن را به حالت "در حال انجام" تغییر داد.');
+        } elseif ($newStatus == self::STATUS_DONE && $this->status != self::STATUS_IN_PROGRESS) {
+            throw new Exception('وظیفه باید در حالت "در حال انجام" باشد تا بتوان آن را به حالت "انجام شده" تغییر داد.');
+        } elseif ($newStatus == self::STATUS_TODO) {
+            throw new Exception('وظیفه نمی‌تواند به حالت "برای انجام" برگردد.');
+        }
+
+        $this->status = $newStatus;
+    }
+
     public function users()
     {
         $sql = "SELECT users.* FROM users
