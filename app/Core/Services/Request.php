@@ -2,15 +2,16 @@
 
 namespace App\Core\Services;
 
-
 class Request
 {
-    private $params;
+    protected $params;
 
     public function __construct()
     {
-        $this->params = $_REQUEST;
+        $this->params = $this->body();
+        // $this->params = $this->request;
         header('Content-Type: application/json');
+        header("Access-Control-Allow-Headers: Authorization");
     }
 
     public function header($key, $default = null)
@@ -19,8 +20,17 @@ class Request
         $jwt_token = $headers[$key] ?? null;
         return $jwt_token ?? $default;
     }
+    public function __get($name)
+    {
+        return $this->params->{$name} ?? null;
+    }
 
-    public function content()
+    public function __set($name, $value)
+    {
+        $this->params->{$name} = $value;
+    }
+
+    protected function content()
     {
         return file_get_contents('php://input');
     }
@@ -28,6 +38,11 @@ class Request
     public function all()
     {
         return json_decode($this->content(), true);
+    }
+    public function body()
+    {
+        return json_decode($this->content());
+
     }
 
     public function input(...$keys)
@@ -42,8 +57,7 @@ class Request
 
     public function get($key, $default = null)
     {
-
-        return isset($this->params[$key]) ? $this->params[$key] : $default;
+        return isset($this->params->{$key}) ? $this->params->{$key} : $default;
     }
 
     public function request()
@@ -80,7 +94,7 @@ class Request
 
     public function method()
     {
-        return $_SERVER["REQUEST_METHOD"];
+        return strtoupper($_SERVER["REQUEST_METHOD"]);
     }
 
     public function isGet()

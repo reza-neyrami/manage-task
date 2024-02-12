@@ -3,6 +3,7 @@
 namespace App\Core\Repository;
 
 use App\Core\Interfaces\Task\TaskRepositoryInterface;
+use App\Core\Services\JWTApi;
 use App\Core\Services\Response;
 use App\Model\Task;
 
@@ -25,7 +26,17 @@ class TaskRepository implements TaskRepositoryInterface
   
     }
 
-    public function findByUserId(int $userId): ?Task
+    public function getByUserId(int $userId): string
+    {
+        $task = $this->model->where('userId', $userId)->findAll();
+        if(!isset($task)){
+            Response::json(['message'=> " User Not Fount"]);
+       }
+       return json_encode($task);
+    }
+
+    
+    public function findByUserId(int $userId):?Task
     {
         $task = $this->model->where('userId', $userId)->first();
         if(!isset($task)){
@@ -76,4 +87,5 @@ class TaskRepository implements TaskRepositoryInterface
     {
         return $this->model;
     }
+
 }

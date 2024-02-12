@@ -15,6 +15,7 @@ use App\Model\Report;
         $this->model = $Report;
     }
 
+
     public function findById(int $id): Report
     {
         $Report =  $this->model->find($id);
@@ -75,5 +76,41 @@ use App\Model\Report;
     public function model()
     {
         return $this->model;
+    }
+
+
+    public function getTasksByDateRange($startDate, $endDate)
+    {
+        return $this->model->where('startDate', '>=', $startDate)
+            ->where('endDate', '<=', $endDate)
+            ->findAll();
+    }
+
+    public function generateReport($tasks)
+    {
+        $report = [];
+        foreach ($tasks as $task) {
+            $report[] = [
+                'Task ID' => $task->id,
+                'Name' => $task->name,
+                'Description' => $task->description,
+                'Start Date' => $task->startDate,
+                'End Date' => $task->endDate,
+                'Status' => $task->status,
+                'User ID' => $task->userId
+            ];
+        }
+
+        // Convert the report to CSV
+        $filename = time()."_"."report.csv";
+        $file = fopen($filename, 'w');
+        fputcsv($file, array_keys($report[0]));
+        foreach ($report as $row) {
+            fputcsv($file, $row);
+        }
+        fclose($file);
+
+        // Return the filename for download
+        return $filename;
     }
 }

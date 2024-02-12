@@ -8,7 +8,8 @@ interface TaskRepositoryInterface
 {
     public function model();
     public function findById(int $id): Task;
-    public function findByuserId(int $userId): ?Task;
+    public function findByuserId(int $userId);
+    public function getByUserId(int $userId) : string;
     public function create(array $data): mixed;
     public function update(int $id, array $data): void;
     public function delete(int $id): void;

@@ -3,8 +3,9 @@
 use App\Core\Router;
 use App\Core\Services\Container;
 use App\Core\Services\Request;
+use App\Http\Middleware\ApiMiddleware;
 use App\Http\Middleware\JWTMiddleware;
-use App\Route\API;
+
 use Dotenv\Dotenv;
 
 require __DIR__ . "/vendor/autoload.php";
@@ -24,16 +25,18 @@ $container = new Container;
 $request = new Request;
 $router = new Router($container, $request);
 
- 
+
 $router->group('/tasks', [], [], function ($tasks) {
 
     $tasks->get('/', 'TaskController@getAllTasks');
     $tasks->get('/{id}', 'TaskController@getTask');
     $tasks->post('/create', 'TaskController@createTask');
+    $tasks->get('/user', 'TaskController@taskByAuthId');
     $tasks->put('/{id}', 'TaskController@updateTask');
     $tasks->delete('/{id}', 'TaskController@deleteTask');
-    $tasks->get('/user/{userId}', 'TaskController@getTasksByUserId');
+    $tasks->get('/user/{id}', 'TaskController@getTasksByUserId');
     $tasks->get('/users', 'TaskController@getUsers');
+    $tasks->post('/assignuser/{taskId}', 'TaskController@assignTask', [JWTMiddleware::class]);
 });
 
 $router->group('/users', [], [], function ($user) {
@@ -44,7 +47,12 @@ $router->group('/users', [], [], function ($user) {
     $user->delete('/{id}', 'UserController@deleteUser');
 });
 
-$router->group('/auth', [], [], function ($auth) {
+$router->group('/files', [JWTMiddleware::class], [], function ($files) {
+    $files->post('/upload/{taskId}', 'FileController@uploadFile');
+    $files->get('/{taskId}', 'FileController@getFilesByTaskId');
+});
+
+$router->group('/auth', [ApiMiddleware::class], [], function ($auth) {
     $auth->post('/login', 'AuthController@login');
     $auth->post('/register', 'AuthController@register');
 });

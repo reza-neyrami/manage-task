@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 
 use App\Core\Repository\UserRepository;
+use App\Core\Services\Auth;
 use App\Core\Services\Request;
 use App\Core\Services\Response;
 
@@ -52,6 +53,12 @@ class UserController extends BaseController
     private function getUserData()
     {
         return $this->request->all();
+    }
+
+    public function gettaskByUser(){
+        $user = Auth::user();
+        $tasks = $user->task();
+        return Response::json($tasks,200);
     }
 
     public function updateUser(int $id)

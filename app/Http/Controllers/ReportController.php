@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Core\Repository\ReportRepository;
 use App\Core\Services\Auth;
+use App\Core\Services\JWTApi;
 use App\Core\Services\Request;
 use App\Core\Services\Response;
 
@@ -18,6 +19,22 @@ class TaskController extends BaseController
     {
         $this->reportRepository = $reportRepository;
         $this->request = $request;
+    }
+
+    public function generateReport($startDate, $endDate)
+    {
+        // Check if the current user is an admin
+        $decoded_token = JWTApi::decode_jwt_token($_SERVER['HTTP_AUTHORIZATION']);
+        if ($decoded_token->role != 'admin') {
+            return Response::json(['message'=> " Access Denied"]);
+        }
+
+        // Generate the report
+        $tasks = $this->reportRepository->getTasksByDateRange($startDate, $endDate);
+        $report = $this->reportRepository->generateReport($tasks);
+
+        // Return the report as a CSV file
+        return $report;
     }
    
     public function getReport(int $id)

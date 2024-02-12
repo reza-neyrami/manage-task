@@ -2,12 +2,10 @@
 
 namespace App\Core;
 
-
 use App\Core\Services\Container;
 use App\Core\Services\Request;
 use Closure;
 use ReflectionMethod;
-
 
 class Router
 {
@@ -16,6 +14,7 @@ class Router
     private $groupOptions = [];
     private $parameters = [];
     protected $container;
+    protected $customPatterns;
     protected $request;
     protected $prefix;
 
@@ -28,10 +27,9 @@ class Router
     public function addRoute($method, $uri, $callback, array $middleware = [])
     {
         if ($this->prefix) {
-            $uri = $this->prefix  . rtrim($uri, '/');
+            $uri = $this->prefix . rtrim($uri, '/');
         }
         $pattern = $this->convertUriToRegex($uri);
-
         $middleware = array_merge($this->middleware, $middleware);
         $this->routes[$method][$pattern] = [
             'action' => $callback,
@@ -41,7 +39,13 @@ class Router
 
     public function convertUriToRegex($uri)
     {
-        return str_replace(['{', '}'], ['(?P<', '>[^/]+)'], $uri) . '$';
+        $pattern = preg_quote($uri, '#');
+        $pattern = str_replace(['\{', '\}'], ['{', '}'], $pattern);
+    
+        // اضافه کردن $ به انتهای الگو برای پایان خط
+        $pattern .= '$';
+    
+        return $pattern;
     }
 
     public function run()
@@ -57,7 +61,7 @@ class Router
         $bestMatch = null;
         $bestMatchLength = 0;
 
-        foreach ($this->routes[$requestMethod]  as $pattern => $route) {
+        foreach ($this->routes[$requestMethod] ?? [] as $pattern => $route) {
             if (preg_match("~^$pattern~", $requestUri, $matches)) {
                 $matchLength = strlen($matches[0]);
                 if ($matchLength > $bestMatchLength) {
@@ -66,7 +70,7 @@ class Router
                     if ($bestMatch) {
                         $parameterValues = array_slice($matches, 1);
                         $parameterNames = array_keys($matches);
-            
+
                         $parameterValues = [];
                         foreach ($parameterNames as $name) {
                             $parameterValues[$name] = $matches[$name];
@@ -75,7 +79,7 @@ class Router
                         if ($this->runMiddleware($bestMatch['middleware'])) {
                             $response = $this->invokeAction($bestMatch['action'], $parameters);
                             echo $response;
-            
+
                             return;
                         }
                     } else {
@@ -84,9 +88,8 @@ class Router
                 }
             }
         }
-        
-    }
 
+    }
 
     private function runMiddleware(array $middlewares): bool
     {
@@ -99,7 +102,7 @@ class Router
                 throw new \RuntimeException('Middleware not found: ' . $middleware);
             }
 
-            $middleware->handle($this->request, fn () => true);
+            $middleware->handle($this->request, fn() => true);
         }
 
         return true;

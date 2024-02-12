@@ -32,12 +32,12 @@ trait DatabaseConnectionTrait
     }
     protected function executeTransaction(callable $callback): void
     {
-        $this->pdo->beginTransaction();
+        $this->getPDO()->beginTransaction();
         try {
             $callback();
-            $this->pdo->commit();
+            $this->getPDO()->commit();
         } catch (Exception $e) {
-            $this->pdo->rollBack();
+            $this->getPDO()->rollBack();
             throw $e;
         }
     }
@@ -45,6 +45,6 @@ trait DatabaseConnectionTrait
     protected function runSql()
     {
         $sql = file_get_contents(__DIR__ . '/task.sql');
-        $this->pdo->exec($sql);
+        $this->getPDO()->exec($sql);
     }
 }

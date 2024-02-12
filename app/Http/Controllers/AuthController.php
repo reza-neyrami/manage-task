@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers;
 
-
-
 use App\Core\Repository\AuthRepository;
 use App\Core\Services\JWTApi;
 use App\Core\Services\Request;
@@ -13,18 +11,26 @@ use App\Http\Controllers\BaseController;
 class AuthController extends BaseController
 {
     private $authRepositroy;
-    protected $request;
+    public $request;
 
     public function __construct(AuthRepository $authRepositroy, Request $request)
     {
         $this->authRepositroy = $authRepositroy;
         $this->request = $request;
     }
+
     public function login()
     {
-        $login =  $this->authRepositroy->login([
-            'email' => $this->request->get('email'),
-            'password' => $this->request->get('password')
+
+        $email = $this->request->email;
+        $password = $this->request->password;
+
+        if (!$email && !$password) {
+            return Response::json(['status' => 'error', 'message' => 'لطفا نام کاربری و ایمیل خود را وارد نمایید'], 400);
+        }
+        $login = $this->authRepositroy->login([
+            'email' => $email,
+            'password' => $password,
         ]);
         if ($login['status'] == false) {
             return Response::json($login, 401);
@@ -37,7 +43,6 @@ class AuthController extends BaseController
         ], 200);
     }
 
-
     public function logout()
     {
 
@@ -47,7 +52,7 @@ class AuthController extends BaseController
                 "message" => "token not found",
             ], 404);
         }
-        $logout =  $this->authRepositroy->logout($jwt_token);
+        $logout = $this->authRepositroy->logout($jwt_token);
         if ($logout['status'] == false) {
             return Response::json($logout, 401);
         }
@@ -58,11 +63,11 @@ class AuthController extends BaseController
 
     public function register()
     {
-        $register =  $this->authRepositroy->register([
+        $register = $this->authRepositroy->register([
             'username' => $this->request->get('username'),
             'email' => $this->request->get('email'),
             'password' => $this->request->get('password'),
-            'role' => $this->request->get('role') ?? 'programmer'
+            'role' => $this->request->get('role') ?? 'programmer',
         ]);
         if ($register['status'] == false) {
             return Response::json($register, 401);
@@ -70,7 +75,7 @@ class AuthController extends BaseController
         $jwt_token = JWTApi::generate_jwt_token($register['user_id']);
         return Response::json([
             "message" => $register,
-            "access_token" => $jwt_token
+            "access_token" => $jwt_token,
         ], 200);
     }
 }

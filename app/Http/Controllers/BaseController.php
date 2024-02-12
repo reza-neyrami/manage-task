@@ -4,13 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Core\Interfaces\Enum\HttpCode;
 use App\Http\Controllers\Controller;
+use Exception;
 
 class BaseController extends Controller
 {
 
     const SUCCESS = 'Success!';
     const FAILED = 'Failed!';
-    public function __construct()
+    private function __construct()
     {
     }
 
@@ -45,7 +46,7 @@ class BaseController extends Controller
             }
 
             if (empty($errors) == true) {
-                move_uploaded_file($file_tmp, "uploads/" . $file_name);
+                move_uploaded_file($file_tmp, "/uploads/" . $file_name);
                 echo "Success";
             } else {
                 print_r($errors);
@@ -53,6 +54,19 @@ class BaseController extends Controller
         }
     }
 
+    public  function dd($data)
+    {
+        echo '<pre>';
+        var_dump($data);
+        echo '</pre>';
+        die();
+    }
 
-    
+
+    public static function validateNotEmpty($value, $fieldName)
+    {
+        if (empty($value)) {
+            throw new Exception("Field '$fieldName' cannot be empty.");
+        }
+    }
 }

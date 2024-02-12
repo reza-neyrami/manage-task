@@ -4,6 +4,7 @@ namespace App\Core\Repository;
 
 use App\Core\Interfaces\Auth\AuthRepositoryInterface;
 use App\Core\Services\JWTApi;
+use App\Core\Services\Response;
 use App\Model\User;
 
 class AuthRepository implements AuthRepositoryInterface
@@ -20,10 +21,10 @@ class AuthRepository implements AuthRepositoryInterface
     {
         $user = $this->model->where('email', $data['email'])->first();
         if (!$user) {
-            return ['message' => 'user not found'];
+            return Response::json(['message' => 'user not found','status' => false]);
         }
         if (!password_verify($data['password'], $user->password)) {
-            return ['message' => 'invalid password'];
+            return Response::json(['message' => 'نام کاربری و پسورد اشتباه میباشد','status' => false]);
         }
        return ['message' => 'user logged in successfully', 'user_id'=>$user->id,'status' => true];
     }

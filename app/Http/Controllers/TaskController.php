@@ -2,28 +2,39 @@
 
 namespace App\Http\Controllers;
 
+use App\Core\Interfaces\Enum\HttpCode;
 use App\Core\Repository\TaskRepository;
+use App\Core\Repository\UserTaskRepository;
 use App\Core\Services\Auth;
 use App\Core\Services\Request;
 use App\Core\Services\Response;
 
-
-
 class TaskController extends BaseController
 {
     private $taskRepository;
+    protected $userTaskRepository;
     protected $request;
 
-    public function __construct(TaskRepository $taskRepository, Request $request)
-    {
+    public function __construct(
+        TaskRepository $taskRepository,
+        UserTaskRepository $userTaskRepository,
+        Request $request
+    ) {
         $this->taskRepository = $taskRepository;
+        $this->userTaskRepository = $userTaskRepository;
         $this->request = $request;
     }
 
     public function getTask(int $id)
     {
         // echo $id;
-        return  $this->taskRepository->findById($id);
+        return $this->taskRepository->findById($id);
+    }
+
+    public function taskByAuthId()
+    {
+        $task = $this->taskRepository->getByUserId(Auth::user()->id);
+       return $task;
     }
 
     public function getTasksByUserId(int $userId)
@@ -53,7 +64,7 @@ class TaskController extends BaseController
         try {
             $userid = Auth::user()->id;
             $data = array_merge($this->getTaskUpData(), ['status' => 'todo', 'userId' => $userid]);
-            $update  =  $this->taskRepository->update(intval($id), $data);
+            $update = $this->taskRepository->update(intval($id), $data);
             return Response::json(['message' => 'Task updated successfully.' . $update], 200);
             // Redirect to the task view or show a success message
         } catch (\Exception $e) {
@@ -62,12 +73,10 @@ class TaskController extends BaseController
         }
     }
 
-
     private function getTaskUpData()
     {
-        return  $this->request->all();
+        return $this->request->all();
     }
-
 
     public function deleteTask(int $id)
     {
@@ -115,16 +124,33 @@ class TaskController extends BaseController
         }
     }
 
-
     private function getTaskData()
     {
         return [
             'name' => $this->request->get('name'),
             'description' => $this->request->get('description'),
-            'startDate' =>  $this->request->get('startDate'),
-            'endDate' =>  $this->request->get('endDate'),
+            'startDate' => $this->request->get('startDate'),
+            'endDate' => $this->request->get('endDate'),
             'status' => $this->request->get('status') ?? 'todo',
             'userId' => Auth::user()->id,
         ];
+    }
+
+    //assigned one task to several user with access role
+    public function assignTask($taskId)
+    {
+        // Check if the current user is an admin
+        $decoded_token = Auth::user();
+        if ($decoded_token->role != 'admin') {
+            return Response::json(['message' => " Access Denied"]);
+        }
+        $userIds = $this->request->input('users');
+        // $this->dd($userIds);
+        // Assign the task to each user
+        foreach ($userIds as $userId) {
+            $this->userTaskRepository->assignToUsers($taskId, $userId);
+        }
+
+        return Response::json(['message' => " Task assigned successfully"]);
     }
 }

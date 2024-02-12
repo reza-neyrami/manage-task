@@ -12,7 +12,7 @@ class UserTask extends Model {
     public function user()
     {
         $sql = "SELECT * FROM users WHERE id = ?";
-        $stmt = $this->pdo->prepare($sql);
+        $stmt = $this->getPDO()->prepare($sql);
         $stmt->bindValue(1, $this->userId);
         $stmt->execute();
         return $stmt->fetchObject(User::class);
@@ -21,7 +21,7 @@ class UserTask extends Model {
     public function task()
     {
         $sql = "SELECT * FROM tasks WHERE id = ?";
-        $stmt = $this->pdo->prepare($sql);
+        $stmt = $this->getPDO()->prepare($sql);
         $stmt->bindValue(1, $this->taskId);
         $stmt->execute();
         return $stmt->fetchObject(Task::class);

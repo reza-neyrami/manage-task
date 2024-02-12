@@ -69,7 +69,7 @@ abstract class Model implements ModelInterface
             $stmt->execute($values);
 
             if (!isset($this->id)) {
-                $this->id = $this->pdo->lastInsertId();
+                $this->id = $this->getPDO()->lastInsertId();
             }
         });
     }
@@ -77,7 +77,7 @@ abstract class Model implements ModelInterface
     public function delete(): void
     {
         $sql = "DELETE FROM {$this->table} WHERE id = ?";
-        $stmt = $this->pdo->prepare($sql);
+        $stmt = $this->getPDO()->prepare($sql);
         $stmt->bindParam(1, $this->id, PDO::PARAM_INT);
         $stmt->execute();
     }
@@ -162,5 +162,12 @@ abstract class Model implements ModelInterface
     public function getFilable()
     {
         return $this->fillable;
+    }
+
+
+    public function exists(int $id)
+    {
+        $user = $this->find($id);
+        return $user !== null;
     }
 }
