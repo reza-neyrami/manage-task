@@ -10,8 +10,8 @@ class Report extends Model
 {
     public $timestamps = false;
     protected $table = 'reports';
-    protected $fillable = ['taskId', 'filename'];
-    protected $toArray = ['id', 'taskId', 'filename', 'useId', 'created_at', 'updated_at'];
+    protected $fillable = ['taskId', 'filename', 'userId', 'name', 'description'];
+    protected $toArray = ['id', 'filename', 'name', 'description', 'created_at', 'updated_at'];
 
     public function task()
     {
@@ -31,8 +31,7 @@ class Report extends Model
         return $stmt->fetchAll(PDO::FETCH_CLASS, User::class);
     }
 
-
-    public  function checkAccess($fileId, $jwt_token)
+    public function checkAccess($fileId, $jwt_token)
     {
         // Decode the JWT token to get the current user ID
         $decoded_token = JWTApi::decode_jwt_token($jwt_token);

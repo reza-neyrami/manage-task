@@ -6,7 +6,7 @@ use App\Core\Interfaces\Report\ReportRepositoryInterface;
 use App\Core\Services\Response;
 use App\Model\Report;
 
- class ReportRepository implements ReportRepositoryInterface
+class ReportRepository implements ReportRepositoryInterface
 {
     private $model;
 
@@ -15,33 +15,33 @@ use App\Model\Report;
         $this->model = $Report;
     }
 
-
     public function findById(int $id): Report
     {
-        $Report =  $this->model->find($id);
-        if(!isset($Report)){
-             Response::json(['message'=> " User Not Fount"]);
+        $Report = $this->model->find($id);
+        if (!isset($Report)) {
+            Response::json(['message' => " User Not Fount"]);
         }
         return $Report;
-  
+
     }
 
     public function findByUserId(int $userId): ?Report
     {
         $Report = $this->model->where('userId', $userId)->first();
-        if(!isset($Report)){
-            Response::json(['message'=> " User Not Fount"]);
-       }
-       return $Report;
+        if (!isset($Report)) {
+            Response::json(['message' => " User Not Fount"]);
+        }
+        return $Report;
     }
 
     public function create(array $data): Report
     {
+        // dd($data);
         try {
             return $this->model->create($data);
         } catch (\PDOException $e) {
-
-            throw new \Exception('There was an error creating the user.');
+            return ["message" => $e->getMessage()];
+            // throw new \Exception('There was an error creating the user.');
         }
     }
 
@@ -78,7 +78,6 @@ use App\Model\Report;
         return $this->model;
     }
 
-
     public function getTasksByDateRange($startDate, $endDate)
     {
         return $this->model->where('startDate', '>=', $startDate)
@@ -97,12 +96,12 @@ use App\Model\Report;
                 'Start Date' => $task->startDate,
                 'End Date' => $task->endDate,
                 'Status' => $task->status,
-                'User ID' => $task->userId
+                'User ID' => $task->userId,
             ];
         }
 
         // Convert the report to CSV
-        $filename = time()."_"."report.csv";
+        $filename = time() . "_" . "report.csv";
         $file = fopen($filename, 'w');
         fputcsv($file, array_keys($report[0]));
         foreach ($report as $row) {
