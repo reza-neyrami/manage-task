@@ -86,7 +86,7 @@ class UserController extends BaseController
         try {
             $user = Auth::user();
             $tasks = $this->userRepository->getTaskByUserId($user->id);
-            return Response::json(['message' => 'User updated successfully.', 'data' => $tasks], 200);
+            return $tasks;
         } catch (\Exception $e) {
             return Response::json(['message' => 'There was an error updating the user. ,' . $e->getMessage()], 500);
         }

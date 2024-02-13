@@ -33,7 +33,8 @@ $router->group('/auth', [ApiMiddleware::class], [], function ($auth) {
 
 $router->group('/files', [JWTMiddleware::class], [], function ($files) {
     $files->post('/upload', 'ReportController@uploadFile');
-    $files->get('/{taskId}', 'ReportController@getFilesByTaskId');
+    $files->get('/{taskId:int}', 'ReportController@getFilesByTaskId');
+    $files->post('/create', 'ReportController@createReport');
 });
 
 $router->group('/users', [], [], function ($user) {
@@ -56,8 +57,13 @@ $router->group('/tasks', [], [], function ($tasks) {
     $tasks->get('/user/{id:int}', 'TaskController@getTasksByUserId');
     $tasks->get('/users', 'TaskController@getUsers');
     $tasks->post('/assignuser/{taskId:int}', 'TaskController@assignTask', [JWTMiddleware::class]);
+    
 });
 
+
+$router->group('/usertasks', [], [], function ($usertask) {
+    $usertask->post('/status/{taskId:int}', 'UserTaskController@userStatusUpdate', [JWTMiddleware::class]);
+});
 
 $router->run();
 // $api = new API($router);

@@ -4,6 +4,7 @@ namespace App\Core;
 
 use App\Core\Services\Container;
 use App\Core\Services\Request;
+use App\Core\Services\Response;
 use Closure;
 use ReflectionMethod;
 
@@ -38,13 +39,12 @@ class Router
             'middleware' => $middleware,
             'prefix' => $prefix, // اضافه کردن پیشوند
         ];
-    
+
         // مرتب‌سازی مسیرها بر اساس پیشوند، به طور صعودی
         uasort($this->routes[$method], function ($a, $b) {
             return strcmp($a['prefix'], $b['prefix']);
         });
     }
-    
 
     // این کمی بهتره
     public function convertUriToRegex($uri)
@@ -62,7 +62,6 @@ class Router
 
         return "#^{$pattern}#";
     }
-
     public function run()
     {
         $requestMethod = $this->request->Method();
@@ -82,28 +81,30 @@ class Router
                 if ($matchLength > $bestMatchLength) {
                     $bestMatch = $route;
                     $bestMatchLength = $matchLength;
-                    if ($bestMatch) {
-                        $parameterValues = array_slice($matches, 1);
-                        $parameterNames = array_keys($matches);
-
-                        $parameterValues = [];
-                        foreach ($parameterNames as $name) {
-                            $parameterValues[$name] = $matches[$name];
-                        }
-                        $parameters = array_merge($parameterNames, $parameterValues, $this->parameters);
-                        if ($this->runMiddleware($bestMatch['middleware'])) {
-                            $response = $this->invokeAction($bestMatch['action'], $parameters);
-                            echo $response;
-
-                            return;
-                        }
-                    } else {
-                        throw new \RuntimeException('No route found for ' . $requestMethod . ' ' . $requestUri);
-                    }
                 }
             }
         }
 
+        if (!$bestMatch) {
+            // No route found; throw a 404 Not Found exception
+            Response::json(['message' => "Route does not ", 'mehto' => $requestMethod]);
+        }
+
+        $parameterNames = array_keys($matches);
+        $parameterValues = [];
+        foreach ($parameterNames as $name) {
+            $parameterValues[$name] = $matches[$name];
+        }
+
+        $parameters = array_merge($parameterNames, $parameterValues, $this->parameters);
+
+        if ($this->runMiddleware($bestMatch['middleware'])) {
+            $response = $this->invokeAction($bestMatch['action'], $parameters);
+            echo $response;
+
+            return;
+        }
+        throw new \Exception('Forbidden', 403);
     }
 
     private function runMiddleware(array $middlewares): bool
@@ -151,24 +152,23 @@ class Router
     {
         $this->groupOptions = array_merge($this->groupOptions, $options);
         $this->middleware = array_merge($this->middleware, $middleware);
-    
+
         // Add the prefix to each route in the group
         $this->prefix = $prefix;
-    
+
         // Extract the first name from the prefix
         $firstName = explode('/', trim($prefix, '/'))[0];
-    
+
         call_user_func_array($callback, [$this]);
-    
+
         // Now you can use $firstName to sort your routes
         // ...
-    
+
         $this->groupOptions = [];
         $this->middleware = [];
         $this->parameters = [];
         $this->prefix = '';
     }
-    
 
     public function get($uri, $callback, array $middleware = [])
     {

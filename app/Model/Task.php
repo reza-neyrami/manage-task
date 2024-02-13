@@ -10,7 +10,7 @@ class Task extends Model
 {
     public $timestamps = false;
     protected $table = 'tasks';
-    protected $fillable = ['name', 'description', 'startDate', 'endDate', 'status', 'userId'];
+    protected $fillable = ['id','name', 'description', 'startDate', 'endDate', 'status', 'userId'];
     protected $toArray = ['id', 'name', 'description', 'startDate', 'endDate', 'status', 'userId'];
 
     const STATUS_TODO = 'todo';
@@ -35,19 +35,7 @@ class Task extends Model
         $this->status = self::STATUS_DONE;
     }
 
-    public function changeStatus(string $newStatus)
-    {
-        if ($newStatus == self::STATUS_IN_PROGRESS && $this->status != self::STATUS_TODO) {
-            throw new Exception('وظیفه باید در حالت "برای انجام" باشد تا بتوان آن را به حالت "در حال انجام" تغییر داد.');
-        } elseif ($newStatus == self::STATUS_DONE && $this->status != self::STATUS_IN_PROGRESS) {
-            throw new Exception('وظیفه باید در حالت "در حال انجام" باشد تا بتوان آن را به حالت "انجام شده" تغییر داد.');
-        } elseif ($newStatus == self::STATUS_TODO) {
-            throw new Exception('وظیفه نمی‌تواند به حالت "برای انجام" برگردد.');
-        }
-
-        $this->status = $newStatus;
-    }
-
+    
     public function users()
     {
         $sql = "SELECT users.* FROM users
@@ -67,4 +55,18 @@ class Task extends Model
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_CLASS, Report::class);
     }
+
+    public function changeStatus(string $newStatus)
+    {
+        if ($newStatus == self::STATUS_IN_PROGRESS && $this->status != self::STATUS_TODO) {
+            throw new Exception('وظیفه باید در حالت "برای انجام" باشد تا بتوان آن را به حالت "در حال انجام" تغییر داد.');
+        } elseif ($newStatus == self::STATUS_DONE && $this->status != self::STATUS_IN_PROGRESS) {
+            throw new Exception('وظیفه باید در حالت "در حال انجام" باشد تا بتوان آن را به حالت "انجام شده" تغییر داد.');
+        } elseif ($newStatus == self::STATUS_TODO) {
+            throw new Exception('وظیفه نمی‌تواند به حالت "برای انجام" برگردد.');
+        }
+
+        $this->status = $newStatus;
+    }
+
 }

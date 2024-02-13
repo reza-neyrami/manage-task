@@ -135,12 +135,10 @@ class ReportController extends BaseController
     private function getReportData()
     {
         return [
-            'name' => $this->request->get('name'),
-            'description' => $this->request->get('description'),
-            'startDate' =>  $this->request->get('startDate'),
-            'endDate' =>  $this->request->get('endDate'),
-            'status' => $this->request->get('status') ?? 'todo',
+            'filename' =>  $this->request->get('filename'),
+            'taskId' => $this->request->get('status') ?? 'todo',
             'userId' => Auth::user()->id,
         ];
     }
+   
 }

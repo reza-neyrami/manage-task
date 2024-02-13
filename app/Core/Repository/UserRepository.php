@@ -57,7 +57,7 @@ class UserRepository implements UserRepositoryInterface
             Response::json(['message' => "اطلاعات در دسترس نیست"]);
         }
 
-        return $data;
+        return json_encode($data);
     }
 
     public function delete(int $id): void

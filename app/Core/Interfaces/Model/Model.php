@@ -16,7 +16,7 @@ abstract class Model implements ModelInterface
     protected $whereUsed;
     protected $sql;
     public $id;
-
+    protected $dirty = [];
     public function __construct()
     {
         $this->getPDO();
@@ -66,24 +66,33 @@ abstract class Model implements ModelInterface
         return $stmt->fetchAll(PDO::FETCH_CLASS, static::class);
     }
 
+    public function __set($name, $value)
+    {
+        $this->bindings[$name] = $value;
+        if (isset($this->{$name}) && $this->{$name} !== $value) {
+            $this->dirty[$name] = $value;
+        }
+
+        $this->{$name} = $value;
+    }
+
     public function save(): void
     {
         $this->executeTransaction(function () {
             $properties = $this->getUpdateProperties();
             $placeholders = implode(', ', array_fill(0, count($properties), '?'));
-            $values = array_map(fn($p) => $this->{$p}, $properties);
-
             if (isset($this->id)) {
                 $set = [];
                 foreach ($properties as $property) {
                     $set[] = "$property = ?";
                 }
-                $values = array_merge(array_values($properties), [$this->id]);
+                $values = array_merge(array_map(fn($p) => $this->{$p}, $properties), [$this->id]);
+
                 $sql = "UPDATE {$this->table} SET " . implode(', ', $set) . " WHERE id = ?";
             } else {
                 $sql = "INSERT INTO {$this->table} (" . implode(', ', $properties) . ") VALUES ($placeholders)";
+                $values = array_map(fn($p) => $this->{$p}, $properties);
             }
-
             $stmt = $this->getPDO()->prepare($sql);
             $stmt->execute($values);
 
@@ -92,6 +101,8 @@ abstract class Model implements ModelInterface
             }
         });
     }
+
+    // ...
 
     public function delete(): void
     {
@@ -113,12 +124,19 @@ abstract class Model implements ModelInterface
     {
         $model = new static();
         $model->executeTransaction(function () use ($model, $id, $data) {
-            $properties = $model->getUpdateProperties();
+            $properties = array_flip($model->getUpdateProperties());
+
             $set = [];
-            foreach ($properties as $property) {
-                $set[] = "$property = ?";
+            foreach ($data as $key => $value) {
+                if (isset($properties[$key])) {
+                    $set[] = "$key = ?";
+                }
             }
-            $values = array_merge(array_values($data), [$id]);
+
+            // dd(array_intersect_key($data, $properties));
+            $values = array_values(array_intersect_key($data, $properties));
+            $values[] = $id;
+
             $sql = "UPDATE {$model->table} SET " . implode(', ', $set) . " WHERE id = ?";
             $stmt = $model::$pdo->prepare($sql);
             $stmt->execute($values);
@@ -136,7 +154,6 @@ abstract class Model implements ModelInterface
         $model->save();
         return $model;
     }
-
 
     private function addCondition(string $column, string $value, string $operator, string $conditionType): self
     {
