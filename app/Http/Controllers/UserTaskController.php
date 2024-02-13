@@ -7,7 +7,6 @@ use App\Core\Repository\UserRepository;
 use App\Core\Repository\UserTaskRepository;
 use App\Core\Services\Auth;
 use App\Core\Services\Request;
-use App\Model\Task;
 
 class UserTaskController extends BaseController
 {
@@ -30,10 +29,10 @@ class UserTaskController extends BaseController
         $task = $this->taskRepository->model()->find($taskId);
 
         if ($task && in_array($user, $task->users())) {
-            $task->status = Task::STATUS_IN_PROGRESS;
+            $task->status = $this->request->get("status");
             $task->userId = $user->id;
             $task->save();
-            return $task;
+            return json_encode($task->toArray());
         } else {
             throw new \Exception("Not Found", 400);
         }
