@@ -32,8 +32,8 @@ $router->group('/auth', [ApiMiddleware::class], [], function ($auth) {
 });
 
 $router->group('/files', [JWTMiddleware::class], [], function ($files) {
-    $files->post('/upload/{taskId:int}', 'FileController@uploadFile');
-    $files->get('/{taskId}', 'FileController@getFilesByTaskId');
+    $files->post('/upload', 'ReportController@uploadFile');
+    $files->get('/{taskId}', 'ReportController@getFilesByTaskId');
 });
 
 $router->group('/users', [], [], function ($user) {
@@ -43,6 +43,7 @@ $router->group('/users', [], [], function ($user) {
     $user->post('/', 'UserController@createUser');
     $user->put('/{id:int}', 'UserController@updateUser');
     $user->delete('/{id:int}', 'UserController@deleteUser');
+    $user->get('/getTaskUser', 'UserController@getTaskByUserId');
 });
 
 $router->group('/tasks', [], [], function ($tasks) {

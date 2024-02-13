@@ -7,6 +7,7 @@ use App\Core\Interfaces\Model\Model;
 class UserTask extends Model {
     public $timestamps = false;
     protected $table = 'user_tasks';
+    
     protected $fillable = ['userId', 'taskId'];
 
     public function user()

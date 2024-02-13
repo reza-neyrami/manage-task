@@ -64,10 +64,9 @@ class UserController extends BaseController
         $user = Auth::user();
         if ($user->role != 'admin') {
             return Response::json(['message' => 'شما به این بخش دسترسی ندارید'], 400);
-        } 
-        
-        $skilesUsers = $this->userRepository->getBy('role', $skile);
+        }
 
+        $skilesUsers = $this->userRepository->getBy('role', $skile);
 
         return Response::json($skilesUsers, 200);
     }
@@ -78,6 +77,16 @@ class UserController extends BaseController
             $data = array_merge($this->getUserData(), ['status' => 'active']);
             $this->userRepository->update($id, $data);
             return Response::json(['message' => 'User updated successfully.'], 200);
+        } catch (\Exception $e) {
+            return Response::json(['message' => 'There was an error updating the user. ,' . $e->getMessage()], 500);
+        }
+    }
+    public function getTaskByUserId()
+    {
+        try {
+            $user = Auth::user();
+            $tasks = $this->userRepository->getTaskByUserId($user->id);
+            return Response::json(['message' => 'User updated successfully.', 'data' => $tasks], 200);
         } catch (\Exception $e) {
             return Response::json(['message' => 'There was an error updating the user. ,' . $e->getMessage()], 500);
         }

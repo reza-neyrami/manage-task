@@ -6,7 +6,6 @@ use App\Core\Interfaces\User\UserRepositoryInterface;
 use App\Core\Services\Response;
 use App\Model\User;
 
-
 class UserRepository implements UserRepositoryInterface
 {
     private $model;
@@ -23,20 +22,20 @@ class UserRepository implements UserRepositoryInterface
 
     public function findById(int $id): User
     {
-        $user =  $this->model->find($id);
-        if(!isset($user)){
-             Response::json(['message'=> " User Not Fount"]);
+        $user = $this->model->find($id);
+        if (!isset($user)) {
+            Response::json(['message' => " User Not Fount"]);
         }
         return $user;
     }
 
     public function findByEmail(string $email): ?User
     {
-        $user =  $this->model->where('email', $email)->first();
-        if(!isset($user)){
-            Response::json(['message'=> " User Not Fount"]);
-       }
-       return $user;
+        $user = $this->model->where('email', $email)->first();
+        if (!isset($user)) {
+            Response::json(['message' => " User Not Fount"]);
+        }
+        return $user;
     }
 
     public function create(array $data): User
@@ -49,6 +48,17 @@ class UserRepository implements UserRepositoryInterface
         }
     }
 
+    public function getTaskByUserId(int $userId)
+    {
+        // $data = $this->model->where('taskId', $taskId)->where('userId', $userId)->user()->getAll();
+        $data = $this->model::find($userId)->assignedTasks();
+
+        if (empty($data)) {
+            Response::json(['message' => "اطلاعات در دسترس نیست"]);
+        }
+
+        return $data;
+    }
 
     public function delete(int $id): void
     {
@@ -60,7 +70,7 @@ class UserRepository implements UserRepositoryInterface
 
     public function all(): array
     {
-          return $this->model->findAll();
+        return $this->model->findAll();
     }
 
     public function paginate(int $page = 1, int $perPage = 15): array
@@ -76,7 +86,6 @@ class UserRepository implements UserRepositoryInterface
     {
         return $this->model->where($field, $value)->getAll();
     }
-
 
     public function update(int $id, array $data): void
     {

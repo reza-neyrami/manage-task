@@ -10,7 +10,7 @@ use App\Core\Services\Response;
 
 
 
-class TaskController extends BaseController
+class ReportController extends BaseController
 {
     private $reportRepository;
     protected $request;
@@ -69,8 +69,8 @@ class TaskController extends BaseController
         try {
             $userid = Auth::user()->id;
             $data = array_merge($this->getReportUpData(), ['status' => 'todo', 'userId' => $userid]);
-            $update  =  $this->reportRepository->update(intval($id), $data);
-            return Response::json(['message' => 'Report updated successfully.' . $update], 200);
+              $this->reportRepository->update(intval($id), $data);
+            return Response::json(['message' => 'Report updated successfully.' ], 200);
             // Redirect to the Report view or show a success message
         } catch (\Exception $e) {
             // Handle exception here

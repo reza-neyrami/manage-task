@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Core\Interfaces\Enum\HttpCode;
+use App\Core\Services\Response;
 use App\Http\Controllers\Controller;
 use Exception;
 
@@ -27,13 +28,16 @@ class BaseController extends Controller
 
     public function uploadFile()
     {
-        if (isset($_FILES['file'])) {
+        if (isset($_FILES['banner'])) {
+            $file = $_FILES['banner'];
             $errors = array();
-            $file_name = $_FILES['file']['name'];
-            $file_size = $_FILES['file']['size'];
-            $file_tmp = $_FILES['file']['tmp_name'];
-            $file_type = $_FILES['file']['type'];
-            $file_ext = strtolower(end(explode('.', $_FILES['file']['name'])));
+            $file_name = $file['name'];
+            $file_size = $file['size'];
+            $file_tmp = $file['tmp_name'];
+            $file_type = $file['type'];
+
+            $file_parts = explode('.', $file['name']);
+            $file_ext = strtolower(end($file_parts));
 
             $extensions = array("jpeg", "jpg", "png");
 
@@ -42,26 +46,31 @@ class BaseController extends Controller
             }
 
             if ($file_size > 2097152) {
-                $errors[] = 'File size must be excately 2 MB';
+                $errors[] = 'File size must be exactly 2 MB';
             }
 
             if (empty($errors) == true) {
-                move_uploaded_file($file_tmp, "/uploads/" . $file_name);
-                echo "Success";
+                $upload_dir = $_SERVER['DOCUMENT_ROOT'] . "/public/uploads/";
+                if (!is_dir($upload_dir)) {
+                    mkdir($upload_dir, 0777, true);
+                }
+                $file_path = $upload_dir . $file_name;
+                move_uploaded_file($file_tmp, $file_path);
+
+                Response::json(['banner' => $_SERVER['HTTP_HOST'] . "/public/uploads/" . $file_name]);
             } else {
                 print_r($errors);
             }
         }
     }
 
-    public  function dd($data)
+    public function dd($data)
     {
         echo '<pre>';
         var_dump($data);
         echo '</pre>';
         die();
     }
-
 
     public static function validateNotEmpty($value, $fieldName)
     {

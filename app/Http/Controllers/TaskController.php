@@ -60,7 +60,7 @@ class TaskController extends BaseController
         }
         $data = $this->getTaskData();
         if (isset($data['status']) && $data['status'] != Task::STATUS_TODO) {
-            throw new Exception('وضعیت باید در حالت "برای انجام" باشد.');
+            Response::json(['message' => 'شما دسترسی به  این بخش رو ندارید'], 403);
         }
         $task = $this->taskRepository->create($data);
         return $task;

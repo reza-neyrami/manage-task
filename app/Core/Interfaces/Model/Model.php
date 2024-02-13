@@ -13,6 +13,7 @@ abstract class Model implements ModelInterface
     protected $toArray = [];
     protected $bindings = [];
     protected $table;
+    protected $whereUsed;
     protected $sql;
     public $id;
 
@@ -136,16 +137,34 @@ abstract class Model implements ModelInterface
         return $model;
     }
 
-    public function where(string $column, string $value, string $operator = '='): self
+
+    private function addCondition(string $column, string $value, string $operator, string $conditionType): self
     {
         // Initialize $sql if it's not yet defined (to avoid the error)
         if (!isset($this->sql)) {
             $this->sql = "SELECT * FROM {$this->table}";
+            $this->whereUsed = false;
         }
 
-        $this->sql .= " WHERE $column $operator ?";
+        // Use WHERE for the first condition and $conditionType for subsequent conditions
+        $this->sql .= $this->whereUsed ? " $conditionType " : " WHERE ";
+        $this->sql .= "$column $operator ?";
         $this->bindings[] = $value;
+
+        // Mark that WHERE has been used
+        $this->whereUsed = true;
+
         return $this;
+    }
+
+    public function where(string $column, string $value, string $operator = '='): self
+    {
+        return $this->addCondition($column, $value, $operator, 'AND');
+    }
+
+    public function orWhere(string $column, string $value, string $operator = '='): self
+    {
+        return $this->addCondition($column, $value, $operator, 'OR');
     }
 
     public static function deleteId(int $id): void
