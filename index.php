@@ -5,7 +5,6 @@ use App\Core\Services\Container;
 use App\Core\Services\Request;
 use App\Http\Middleware\ApiMiddleware;
 use App\Http\Middleware\JWTMiddleware;
-
 use Dotenv\Dotenv;
 
 require __DIR__ . "/vendor/autoload.php";
@@ -20,11 +19,9 @@ $env->load();
 // $database = new Database();
 // $database->runSql();
 
-
 $container = new Container;
 $request = new Request;
 $router = new Router($container, $request);
-
 
 $router->group('/auth', [ApiMiddleware::class], [], function ($auth) {
     $auth->post('/login', 'AuthController@login');
@@ -35,6 +32,7 @@ $router->group('/files', [JWTMiddleware::class], [], function ($files) {
     $files->post('/upload', 'ReportController@uploadFile');
     $files->get('/{taskId:int}', 'ReportController@getFilesByTaskId');
     $files->post('/create', 'ReportController@createReport');
+    $files->get('/report/{startdate:string}/{enddate:string}', 'ReportController@generateReport');
 });
 
 $router->group('/users', [], [], function ($user) {
@@ -57,9 +55,8 @@ $router->group('/tasks', [], [], function ($tasks) {
     $tasks->get('/user/{id:int}', 'TaskController@getTasksByUserId');
     $tasks->get('/users', 'TaskController@getUsers');
     $tasks->post('/assignuser/{taskId:int}', 'TaskController@assignTask', [JWTMiddleware::class]);
-    
-});
 
+});
 
 $router->group('/usertasks', [], [], function ($usertask) {
     $usertask->post('/status/{taskId:int}', 'UserTaskController@userStatusUpdate', [JWTMiddleware::class]);

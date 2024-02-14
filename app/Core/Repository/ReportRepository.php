@@ -40,8 +40,8 @@ class ReportRepository implements ReportRepositoryInterface
         try {
             return $this->model->create($data);
         } catch (\PDOException $e) {
-            return ["message" => $e->getMessage()];
-            // throw new \Exception('There was an error creating the user.');
+ 
+            throw new \Exception('There was an error creating the user.'.$e->getMessage());
         }
     }
 
@@ -82,7 +82,7 @@ class ReportRepository implements ReportRepositoryInterface
     {
         return $this->model->where('startDate', '>=', $startDate)
             ->where('endDate', '<=', $endDate)
-            ->findAll();
+            ->getAll();
     }
 
     public function generateReport($tasks)

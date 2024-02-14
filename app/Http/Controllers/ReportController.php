@@ -4,11 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Core\Repository\ReportRepository;
 use App\Core\Services\Auth;
-use App\Core\Services\JWTApi;
 use App\Core\Services\Request;
 use App\Core\Services\Response;
-
-
 
 class ReportController extends BaseController
 {
@@ -24,9 +21,9 @@ class ReportController extends BaseController
     public function generateReport($startDate, $endDate)
     {
         // Check if the current user is an admin
-        $decoded_token = JWTApi::decode_jwt_token($_SERVER['HTTP_AUTHORIZATION']);
+        $decoded_token = Auth::user();
         if ($decoded_token->role != 'admin') {
-            return Response::json(['message'=> " Access Denied"]);
+            return Response::json(['message' => " Access Denied"]);
         }
 
         // Generate the report
@@ -36,11 +33,11 @@ class ReportController extends BaseController
         // Return the report as a CSV file
         return $report;
     }
-   
+
     public function getReport(int $id)
     {
         // echo $id;
-        return  $this->reportRepository->findById($id);
+        return $this->reportRepository->findById($id);
 
     }
 
@@ -69,8 +66,8 @@ class ReportController extends BaseController
         try {
             $userid = Auth::user()->id;
             $data = array_merge($this->getReportUpData(), ['status' => 'todo', 'userId' => $userid]);
-              $this->reportRepository->update(intval($id), $data);
-            return Response::json(['message' => 'Report updated successfully.' ], 200);
+            $this->reportRepository->update(intval($id), $data);
+            return Response::json(['message' => 'Report updated successfully.'], 200);
             // Redirect to the Report view or show a success message
         } catch (\Exception $e) {
             // Handle exception here
@@ -78,12 +75,10 @@ class ReportController extends BaseController
         }
     }
 
-
     private function getReportUpData()
     {
-        return  $this->request->all();
+        return $this->request->all();
     }
-
 
     public function deleteReport(int $id)
     {
@@ -131,14 +126,13 @@ class ReportController extends BaseController
         }
     }
 
-
     private function getReportData()
     {
         return [
-            'filename' =>  $this->request->get('filename'),
+            'filename' => $this->request->get('filename'),
             'taskId' => $this->request->get('status') ?? 'todo',
             'userId' => Auth::user()->id,
         ];
     }
-   
+
 }

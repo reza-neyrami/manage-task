@@ -69,4 +69,21 @@ class Task extends Model
         $this->status = $newStatus;
     }
 
+// get all task  by date
+    public function getTasksByDateRange($startDate, $endDate)
+    {
+        $sql = "SELECT tasks.*, users.username as user_username
+                FROM {$this->table}
+                INNER JOIN user_tasks ON {$this->table}.id = user_tasks.taskId
+                INNER JOIN users ON user_tasks.userId = users.id
+                WHERE tasks.startDate >= ? AND tasks.endDate <= ?";
+
+        $stmt = $this->getPDO()->prepare($sql);
+        $stmt->bindValue(1, $startDate);
+        $stmt->bindValue(2, $endDate);
+        $stmt->execute();
+
+        return $stmt->fetchAll(PDO::FETCH_CLASS, Task::class);
+    }
+
 }
