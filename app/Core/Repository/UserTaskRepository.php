@@ -19,22 +19,20 @@ class UserTaskRepository implements UserTaskRepositoryInterface
         return $this->model;
     }
 
-    public function assignToUsers(int $taskId, array $userIds): void
+    public function assignToUsers(int $taskId, int $userIds)
     {
-        foreach ($userIds as $userId) {
-            $this->model->create(['userId' => $userId, 'taskId' => $taskId]);
-        }
-    }
-    public function deAssignToUsers(int $taskId, array $userIds): void
-    {
-        foreach ($userIds as $userId) {
-            $this->model
-                ->where('userId', $userId)->where('taskId', $taskId)
-                ->delete();
-        }
-    }
 
-   
+      return  $this->model->create(['userId' => $userIds, 'taskId' => $taskId]);
+
+    }
+    public function deAssignToUsers(int $taskId, int $userIds)
+    {
+
+       return $this->model
+            ->where('userId', $userIds)->where('taskId', $taskId)
+            ->delete();
+
+    }
 
     public function findUserByTaskId(int $taskId): ?array
     {

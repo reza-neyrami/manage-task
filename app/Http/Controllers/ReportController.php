@@ -18,7 +18,7 @@ class ReportController extends BaseController
         $this->request = $request;
     }
 
-    public function generateReport($startDate, $endDate)
+    public function generateReport(string $startDate,string $endDate)
     {
         // Check if the current user is an admin
         $decoded_token = Auth::user();
@@ -26,12 +26,28 @@ class ReportController extends BaseController
             return Response::json(['message' => " Access Denied"]);
         }
 
-        // Generate the report
         $tasks = $this->reportRepository->getTasksByDateRange($startDate, $endDate);
-        $report = $this->reportRepository->generateReport($tasks);
+        // TODO if we want to get CSV file run to method  generateReport
+        // $report = $this->reportRepository->generateReport($tasks);
 
         // Return the report as a CSV file
-        return $report;
+        return json_encode($tasks);
+    }
+
+
+    // دریافت گزارش یک کاربر
+    public function  getTasksUserByDateRange($startDate, $endDate,$userId){
+        $decoded_token = Auth::user();
+        if ($decoded_token->role != 'admin') {
+            return Response::json(['message' => " Access Denied"]);
+        }
+
+        $tasks = $this->reportRepository->getTasksUserByDateRange($startDate, $endDate,$userId);
+        // TODO if we want to get CSV file run to method  generateReport
+        // $report = $this->reportRepository->generateReport($tasks);
+
+        // Return the report as a CSV file
+        return json_encode($tasks);
     }
 
     public function getReport(int $id)

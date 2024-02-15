@@ -156,11 +156,11 @@ class TaskController extends BaseController
     public function assignTask($taskId)
     {
         // Check if the current user is an admin
-        $decoded_token = Auth::user();
-        if ($decoded_token->role != 'admin') {
+        $userId = Auth::user();
+        if ($userId->role != 'admin') {
             return Response::json(['message' => " Access Denied"]);
         }
-        $userIds = $this->request->input('userIds');
+        $userIds = $this->request->userIds;
         foreach ($userIds as $userId) {
             $this->userTaskRepository->assignToUsers($taskId, $userId);
         }

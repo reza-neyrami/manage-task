@@ -2,24 +2,29 @@
 
 namespace App\Core\Interfaces\Model;
 
-use App\Core\TraitS\Arrayable;
-use App\Core\TraitS\DatabaseConnectionTrait;
+use App\Core\Interfaces\Model\BaseModel\BaseModel;
+use App\Core\Interfaces\Model\QueryBuilder\Conditions;
+use App\Core\Interfaces\Model\QueryBuilder\Relations;
 use PDO;
 
-abstract class Model implements ModelInterface
+abstract class Model extends BaseModel implements ModelInterface
 {
-    use DatabaseConnectionTrait, Arrayable;
-    protected $fillable = [];
-    protected $toArray = [];
-    protected $bindings = [];
-    protected $table;
-    protected $whereUsed;
-    protected $sql;
-    public $id;
-    protected $dirty = [];
+    use Relations, Conditions;
+    protected $relations;
+
     public function __construct()
     {
         $this->getPDO();
+    }
+
+    public function __set($name, $value)
+    {
+        $this->bindings[$name] = $value;
+        if (isset($this->{$name}) && $this->{$name} !== $value) {
+            $this->dirty[$name] = $value;
+        }
+
+        $this->{$name} = $value;
     }
 
     public function getTableName(): string
@@ -66,16 +71,6 @@ abstract class Model implements ModelInterface
         return $stmt->fetchAll(PDO::FETCH_CLASS, static::class);
     }
 
-    public function __set($name, $value)
-    {
-        $this->bindings[$name] = $value;
-        if (isset($this->{$name}) && $this->{$name} !== $value) {
-            $this->dirty[$name] = $value;
-        }
-
-        $this->{$name} = $value;
-    }
-
     public function save(): void
     {
         $this->executeTransaction(function () {
@@ -101,8 +96,6 @@ abstract class Model implements ModelInterface
             }
         });
     }
-
-    // ...
 
     public function delete(): void
     {
@@ -155,35 +148,6 @@ abstract class Model implements ModelInterface
         return $model;
     }
 
-    private function addCondition(string $column, string $value, string $operator, string $conditionType): self
-    {
-        // Initialize $sql if it's not yet defined (to avoid the error)
-        if (!isset($this->sql)) {
-            $this->sql = "SELECT * FROM {$this->table}";
-            $this->whereUsed = false;
-        }
-
-        // Use WHERE for the first condition and $conditionType for subsequent conditions
-        $this->sql .= $this->whereUsed ? " $conditionType " : " WHERE ";
-        $this->sql .= "$column $operator ?";
-        $this->bindings[] = $value;
-
-        // Mark that WHERE has been used
-        $this->whereUsed = true;
-
-        return $this;
-    }
-
-    public function where(string $column, string $value, string $operator = '='): self
-    {
-        return $this->addCondition($column, $value, $operator, 'AND');
-    }
-
-    public function orWhere(string $column, string $value, string $operator = '='): self
-    {
-        return $this->addCondition($column, $value, $operator, 'OR');
-    }
-
     public static function deleteId(int $id): void
     {
         $model = static::find($id);
@@ -221,4 +185,5 @@ abstract class Model implements ModelInterface
         $user = $this->find($id);
         return $user !== null;
     }
+
 }

@@ -3,6 +3,7 @@
 use App\Core\Router;
 use App\Core\Services\Container;
 use App\Core\Services\Request;
+use App\Core\TraitS\DatabaseConnectionTrait;
 use App\Http\Middleware\ApiMiddleware;
 use App\Http\Middleware\JWTMiddleware;
 use Dotenv\Dotenv;
@@ -32,7 +33,7 @@ $router->group('/files', [JWTMiddleware::class], [], function ($files) {
     $files->post('/upload', 'ReportController@uploadFile');
     $files->get('/{taskId:int}', 'ReportController@getFilesByTaskId');
     $files->post('/create', 'ReportController@createReport');
-    $files->get('/report/{startdate:string}/{enddate:string}', 'ReportController@generateReport');
+    $files->get('/report/{startDate:string}/{endDate:string}', 'ReportController@generateReport');
 });
 
 $router->group('/users', [], [], function ($user) {

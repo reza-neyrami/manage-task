@@ -10,9 +10,6 @@ class User extends Model
     protected $table = 'users';
     protected $fillable = ['username', 'password', 'role', 'email'];
     protected $toArray = ['id', 'username', 'role', 'email'];
-   
-
-    
     public function task()
     {
         $sql = "SELECT * FROM tasks WHERE userId = ?";
@@ -22,17 +19,22 @@ class User extends Model
         return $stmt->fetchAll(PDO::FETCH_CLASS, Task::class);
     }
 
+    public function tasks()
+    {
+        return $this->belongsToMany(Task::class, 'user_tasks', 'userId', 'taskId', 'id', 'id');
+    }
+
     public function assignedTasks()
     {
         $sql = "SELECT tasks.* FROM tasks
                 INNER JOIN user_tasks ON tasks.id = user_tasks.taskId
                 WHERE user_tasks.userId = ?";
+
         $stmt = $this->getPDO()->prepare($sql);
         $stmt->bindValue(1, $this->id);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_CLASS, Task::class);
     }
-
 
     public function report()
     {
@@ -43,5 +45,4 @@ class User extends Model
         return $stmt->fetchAll(PDO::FETCH_CLASS, Report::class);
     }
 
-   
 }

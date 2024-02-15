@@ -5,14 +5,20 @@ namespace App\Core\Repository;
 use App\Core\Interfaces\Report\ReportRepositoryInterface;
 use App\Core\Services\Response;
 use App\Model\Report;
+use App\Model\Task;
+
 
 class ReportRepository implements ReportRepositoryInterface
 {
     private $model;
+    private $task;
+    private $user;
 
-    public function __construct(Report $Report)
+    public function __construct(Report $Report, Task $task, UserRepository $user)
     {
         $this->model = $Report;
+        $this->task = $task;
+        $this->user = $user;
     }
 
     public function findById(int $id): Report
@@ -40,8 +46,8 @@ class ReportRepository implements ReportRepositoryInterface
         try {
             return $this->model->create($data);
         } catch (\PDOException $e) {
- 
-            throw new \Exception('There was an error creating the user.'.$e->getMessage());
+
+            throw new \Exception('There was an error creating the user.' . $e->getMessage());
         }
     }
 
@@ -77,12 +83,23 @@ class ReportRepository implements ReportRepositoryInterface
     {
         return $this->model;
     }
+    // دریافت تسک های کاربر بر اساس  زمان
+    public function getTasksUserByDateRange($startDate, $endDate, $userId)
+    {
 
+        $results = $this->task->getTasksUserByDateRange($startDate, $endDate, $userId);
+        return $results;
+
+    }
+
+    //دریافت گزارش کاربران
     public function getTasksByDateRange($startDate, $endDate)
     {
-        return $this->model->where('startDate', '>=', $startDate)
-            ->where('endDate', '<=', $endDate)
-            ->getAll();
+
+        $results = $this->task->getTasksByDateRange($startDate, $endDate);
+        // TODO  دریافت  فایل  اکسل  درون کنترلر ست شده
+        return $results;
+
     }
 
     public function generateReport($tasks)

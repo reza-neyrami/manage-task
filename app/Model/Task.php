@@ -47,6 +47,49 @@ class Task extends Model
         return $stmt->fetchAll(PDO::FETCH_CLASS, User::class);
     }
 
+// get all task  by date
+    public function getTasksUserByDateRange($startDate, $endDate,$userId)
+    {
+        $sql = "SELECT tasks.*, users.username as user_username
+        FROM user_tasks
+        INNER JOIN tasks ON user_tasks.taskId = tasks.id
+        INNER JOIN users ON user_tasks.userId = users.id
+        WHERE tasks.startDate >= ? AND tasks.endDate <= ? AND users.id = ?";
+        // dd($sql);
+        $stmt = $this->getPDO()->prepare($sql);
+        $stmt->bindValue(1, $startDate);
+        $stmt->bindValue(2, $endDate);
+        $stmt->bindValue(3, $userId);
+        $stmt->execute();
+        // $stmt->debugDumpParams();
+        // dd($sql);
+
+        return $stmt->fetchAll(PDO::FETCH_CLASS, Task::class);
+    }
+    public function getTasksByDateRange($startDate, $endDate)
+    {
+        $sql = "SELECT
+        u.username,
+        u.id,
+        u.role,
+        COUNT(t.id) AS total_tasks,
+        COUNT(CASE WHEN t.status = 'todo' THEN 1 END) AS todo_tasks,
+        COUNT(CASE WHEN t.status = 'doing' THEN 1 END) AS doing_tasks,
+        COUNT(CASE WHEN t.status = 'done' THEN 1 END) AS done_tasks
+        FROM users u
+        LEFT JOIN user_tasks ut ON u.id = ut.userId
+        LEFT JOIN tasks t ON ut.taskId = t.id
+        WHERE t.startDate BETWEEN :start_date AND t.endDate <= :end_date
+        GROUP BY u.id;
+        ";
+        $stmt = $this->getPDO()->prepare($sql);
+        $stmt->bindValue(':start_date', $startDate);
+        $stmt->bindValue(':end_date', $endDate);
+        $stmt->execute();
+
+        return $stmt->fetchAll(PDO::FETCH_CLASS, Task::class);
+    }
+
     public function reports()
     {
         $sql = "SELECT * FROM reports WHERE taskId = ?";
@@ -67,23 +110,6 @@ class Task extends Model
         }
 
         $this->status = $newStatus;
-    }
-
-// get all task  by date
-    public function getTasksByDateRange($startDate, $endDate)
-    {
-        $sql = "SELECT tasks.*, users.username as user_username
-                FROM {$this->table}
-                INNER JOIN user_tasks ON {$this->table}.id = user_tasks.taskId
-                INNER JOIN users ON user_tasks.userId = users.id
-                WHERE tasks.startDate >= ? AND tasks.endDate <= ?";
-
-        $stmt = $this->getPDO()->prepare($sql);
-        $stmt->bindValue(1, $startDate);
-        $stmt->bindValue(2, $endDate);
-        $stmt->execute();
-
-        return $stmt->fetchAll(PDO::FETCH_CLASS, Task::class);
     }
 
 }

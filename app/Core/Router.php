@@ -4,7 +4,6 @@ namespace App\Core;
 
 use App\Core\Services\Container;
 use App\Core\Services\Request;
-use App\Core\Services\Response;
 use Closure;
 use ReflectionMethod;
 
@@ -39,13 +38,15 @@ class Router
             'middleware' => $middleware,
             'prefix' => $prefix, // اضافه کردن پیشوند
         ];
-
+    
         // مرتب‌سازی مسیرها بر اساس پیشوند، به طور صعودی
         uasort($this->routes[$method], function ($a, $b) {
             return strcmp($a['prefix'], $b['prefix']);
         });
     }
-
+    
+   
+    
     // این کمی بهتره
     public function convertUriToRegex($uri)
     {
@@ -59,10 +60,11 @@ class Router
 
         // اضافه کردن $ به انتهای الگو برای پایان خط
         $pattern .= '$';
-
+      
         return "#^{$pattern}#";
     }
-    public function run()
+
+     public function run()
     {
         $requestMethod = $this->request->Method();
         $requestUri = $this->request->getPath();
@@ -74,37 +76,43 @@ class Router
         $requestUri = "/" . trim($requestUri, '/');
         $bestMatch = null;
         $bestMatchLength = 0;
+       
 
         foreach ($this->routes[$requestMethod] ?? [] as $pattern => $route) {
             if (preg_match($pattern, $requestUri, $matches)) {
+            
                 $matchLength = strlen($matches[0]);
                 if ($matchLength > $bestMatchLength) {
                     $bestMatch = $route;
                     $bestMatchLength = $matchLength;
+                    if ($bestMatch) {
+                        $parameterValues = array_slice($matches, 1);
+                        $parameterNames = array_keys($matches);
+
+                        $parameterValues = [];
+                        foreach ($parameterNames as $name) {
+                            $parameterValues[$name] = $matches[$name];
+                        }
+                        // filter string key parameters to action and match for action...
+                        $parameterValues = array_filter($parameterValues, function($key) {
+                            return is_string(trim($key));
+                        }, ARRAY_FILTER_USE_KEY);
+
+                        $parameters = array_replace($parameterValues, $this->parameters);
+                        if ($this->runMiddleware($bestMatch['middleware'])) {
+                            
+                            $response = $this->invokeAction($bestMatch['action'], $parameters);
+                            echo $response;
+
+                            return;
+                        }
+                    } else {
+                        throw new \RuntimeException('No route found for ' . $requestMethod . ' ' . $requestUri);
+                    }
                 }
             }
         }
 
-        if (!$bestMatch) {
-            // No route found; throw a 404 Not Found exception
-            Response::json(['message' => "Route does not ", 'mehto' => $requestMethod]);
-        }
-
-        $parameterNames = array_keys($matches);
-        $parameterValues = [];
-        foreach ($parameterNames as $name) {
-            $parameterValues[$name] = $matches[$name];
-        }
-
-        $parameters = array_merge($parameterNames, $parameterValues, $this->parameters);
-
-        if ($this->runMiddleware($bestMatch['middleware'])) {
-            $response = $this->invokeAction($bestMatch['action'], $parameters);
-            echo $response;
-
-            return;
-        }
-        throw new \Exception('Forbidden', 403);
     }
 
     private function runMiddleware(array $middlewares): bool
@@ -126,6 +134,7 @@ class Router
 
     private function invokeAction($action, array $parameters): mixed
     {
+        // dd($parameters);
         if (is_callable($action)) {
             return call_user_func_array($action, $parameters);
         }
@@ -133,15 +142,13 @@ class Router
         list($controller, $method) = explode('@', $action);
         $controller = '\\App\\Http\\Controllers\\' . $controller;
         $controller = $this->container->make($controller);
-
         $reflectionMethod = new ReflectionMethod($controller, $method);
-
+        
         if (!$reflectionMethod->isPublic()) {
             throw new \RuntimeException('Controller method must be public');
         }
-
+        
         $mappedParams = array_map(function ($param) use ($parameters) {
-
             return $parameters[$param->getName()];
         }, $reflectionMethod->getParameters());
 
@@ -152,23 +159,24 @@ class Router
     {
         $this->groupOptions = array_merge($this->groupOptions, $options);
         $this->middleware = array_merge($this->middleware, $middleware);
-
+    
         // Add the prefix to each route in the group
         $this->prefix = $prefix;
-
+    
         // Extract the first name from the prefix
         $firstName = explode('/', trim($prefix, '/'))[0];
-
+    
         call_user_func_array($callback, [$this]);
-
+    
         // Now you can use $firstName to sort your routes
         // ...
-
+    
         $this->groupOptions = [];
         $this->middleware = [];
         $this->parameters = [];
         $this->prefix = '';
     }
+    
 
     public function get($uri, $callback, array $middleware = [])
     {

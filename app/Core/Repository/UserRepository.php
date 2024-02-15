@@ -51,7 +51,7 @@ class UserRepository implements UserRepositoryInterface
     public function getTaskByUserId(int $userId)
     {
         // $data = $this->model->where('taskId', $taskId)->where('userId', $userId)->user()->getAll();
-        $data = $this->model::find($userId)->assignedTasks();
+        $data = $this->model::find($userId)->tasks();
 
         if (empty($data)) {
             Response::json(['message' => "اطلاعات در دسترس نیست"]);

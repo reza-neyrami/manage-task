@@ -102,11 +102,15 @@ class UserController extends BaseController
         }
     }
 
+    
+
     public function getAllUsers()
     {
         try {
-            $users = $this->userRepository->all();
-            return Response::json($users, 200);
+            $users =$this->userRepository->findById(27);
+            $task = $users->tasks();
+            // return $task;
+            return Response::json($task, 200);
         } catch (\Exception $e) {
             return Response::json(['message' => 'There was an error getting the users. ,' . $e->getMessage()], 500);
         }

@@ -42,7 +42,7 @@ trait DatabaseConnectionTrait
         }
     }
 
-    protected function runSql()
+    public function runSql()
     {
         $sql = file_get_contents(__DIR__ . '/task.sql');
         $this->getPDO()->exec($sql);
