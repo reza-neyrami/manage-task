@@ -5,11 +5,12 @@ namespace App\Core\Interfaces\Model;
 use App\Core\Interfaces\Model\BaseModel\BaseModel;
 use App\Core\Interfaces\Model\QueryBuilder\Conditions;
 use App\Core\Interfaces\Model\QueryBuilder\Relations;
+use App\Core\TraitS\Arrayable;
 use PDO;
 
 abstract class Model extends BaseModel implements ModelInterface
 {
-    use Relations, Conditions;
+    use Relations, Conditions ;
     protected $relations;
 
     public function __construct()

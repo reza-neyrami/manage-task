@@ -23,27 +23,30 @@ class UserTaskController extends BaseController
         $this->request = $request;
     }
 
+    // update statuse user
     public function userStatusUpdate($taskId)
     {
-        $user = Auth::user();
-        $task = $this->taskRepository->model()->find($taskId);
+        try {
+            $user = Auth::user();
+            $task = $this->taskRepository->model()->find($taskId);
 
-        if ($task && in_array($user, $task->users())) {
-            $task->changeStatus($this->request->status);
-            $task->status = $this->request->status;
-            $task->userId = $user->id;
-            $task->save();
-            $this->reportRipository->create([
-                "taskId" => $task->id,
-                "userId" => $user->id,
-                'name' => $this->request->name,
-                'description' => $this->request->description,
-                'filename' => $this->request->banner,
-            ]);
+            if ($task && in_array($user, $task->users())) {
+                $task->changeStatus($this->request->status);
+                $task->status = $this->request->status;
+                $task->userId = $user->id;
+                $task->save();
+                $this->reportRipository->create([
+                    "taskId" => $task->id,
+                    "userId" => $user->id,
+                    'name' => $this->request->name,
+                    'description' => $this->request->description,
+                    'filename' => $this->request->banner ?? '',
+                ]);
 
-            return json_encode($task->toArray());
-        } else {
-            throw new \Exception("Not Found", 400);
+                return json_encode($task);
+            }
+        } catch (\Exception $e) {
+            return json_encode(['message' => 'this error .' . $e->getMessage()]);
         }
     }
 

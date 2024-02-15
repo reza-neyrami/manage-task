@@ -4,14 +4,17 @@ namespace App\Model;
 
 use App\Core\Interfaces\Model\Model;
 use App\Core\Services\JWTApi;
+use App\Core\TraitS\Arrayable;
 use PDO;
 
 class Report extends Model
 {
-    public $timestamps = false;
+    use Arrayable;
+    protected $timestamps = false;
     protected $table = 'reports';
     protected $fillable = ['taskId', 'filename', 'userId', 'name', 'description'];
     protected $toArray = ['id', 'filename', 'name', 'description', 'created_at', 'updated_at'];
+    protected $fields = ['id', 'filename', 'name', 'description', 'created_at', 'updated_at'];
 
     public function task()
     {
@@ -51,4 +54,8 @@ class Report extends Model
             return false;
         }
     }
+
+
+    
+  
 }

@@ -9,7 +9,7 @@ use PDO;
 
 class Task extends Model
 {
-    public $timestamps = false;
+    protected $timestamps = false;
     protected $table = 'tasks';
     protected $fillable = ['id', 'name', 'description', 'startDate', 'endDate', 'status', 'userId'];
     protected $toArray = ['id', 'name', 'description', 'startDate', 'endDate', 'status', 'userId'];
@@ -66,6 +66,8 @@ class Task extends Model
 
         return $stmt->fetchAll(PDO::FETCH_CLASS, Task::class);
     }
+
+    // گزارش رنج زمانی و تعداد بر اساس وضیعت بر اساس کوئری 
     public function getTasksByDateRange($startDate, $endDate)
     {
         $sql = "SELECT
@@ -80,8 +82,7 @@ class Task extends Model
         LEFT JOIN user_tasks ut ON u.id = ut.userId
         LEFT JOIN tasks t ON ut.taskId = t.id
         WHERE t.startDate BETWEEN :start_date AND t.endDate <= :end_date
-        GROUP BY u.id;
-        ";
+        GROUP BY u.id";
         $stmt = $this->getPDO()->prepare($sql);
         $stmt->bindValue(':start_date', $startDate);
         $stmt->bindValue(':end_date', $endDate);
@@ -89,6 +90,8 @@ class Task extends Model
 
         return $stmt->fetchAll(PDO::FETCH_CLASS, Task::class);
     }
+
+
 
     public function reports()
     {
@@ -99,6 +102,7 @@ class Task extends Model
         return $stmt->fetchAll(PDO::FETCH_CLASS, Report::class);
     }
 
+    //add workflow as  status update for programmer
     public function changeStatus(string $newStatus)
     {
         if ($newStatus == self::STATUS_IN_PROGRESS && $this->status != self::STATUS_TODO) {

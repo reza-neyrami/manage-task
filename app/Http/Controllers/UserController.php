@@ -18,6 +18,7 @@ class UserController extends BaseController
         $this->request = $request;
     }
 
+    // دریافت اطلاعات یک کاربر
     public function getUser(int $id)
     {
         if (isset($id)) {
@@ -26,7 +27,7 @@ class UserController extends BaseController
         }
 
     }
-
+    // دریافت اطالاع  کاربر بر اساس فیلد و مقدار
     public function getUsersBySomeField(string $field, string $value)
     {
         try {
@@ -37,19 +38,33 @@ class UserController extends BaseController
         }
     }
 
+    // ایجاد کاربر 
     public function createUser()
     {
         try {
-            $user = $this->userRepository->create($this->getUserData());
+            $userData = $this->getUserData();
+            $this->validateUserData($userData);
+            $user = $this->userRepository->create($userData);
             return Response::json($user, 201);
         } catch (\Exception $e) {
             return Response::json(['message' => 'There was an error creating the user. ,' . $e->getMessage()], 500);
         }
     }
 
+    // دریافت  اطلاعات کل کاربران 
     private function getUserData()
     {
         return $this->request->all();
+    }
+
+    private function validateUserData($data)
+    {
+        $requiredFields = ['username', 'password', 'role', 'email'];
+        foreach ($requiredFields as $field) {
+            if (!isset($data[$field])) {
+                throw new \Exception("The field '{$field}' is required.");
+            }
+        }
     }
 
     public function gettaskByUser()
@@ -102,24 +117,22 @@ class UserController extends BaseController
         }
     }
 
-    
-
+    // دریافت اطلاعات کل کاربران
     public function getAllUsers()
     {
         try {
-            $users =$this->userRepository->findById(27);
-            $task = $users->tasks();
+            $users = $this->userRepository->all();
             // return $task;
-            return Response::json($task, 200);
+            return Response::json($users, 200);
         } catch (\Exception $e) {
             return Response::json(['message' => 'There was an error getting the users. ,' . $e->getMessage()], 500);
         }
     }
 
-    public function getPaginatedUsers(int $limit = 15, int $page = 1)
+    public function getPaginatedUsers(int $page = 15, int $per_page = 1)
     {
         try {
-            $users = $this->userRepository->paginate($limit, $page);
+            $users = $this->userRepository->paginate($page, $per_page);
             return Response::json($users, 200);
         } catch (\Exception $e) {
             return Response::json(['message' => 'There was an error getting the users. ,' . $e->getMessage()], 500);

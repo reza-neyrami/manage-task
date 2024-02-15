@@ -18,7 +18,8 @@ class ReportController extends BaseController
         $this->request = $request;
     }
 
-    public function generateReport(string $startDate,string $endDate)
+    // دریافت گزارش مدیریت کاربران بر اساس وضیعت
+    public function generateReport()
     {
         // Check if the current user is an admin
         $decoded_token = Auth::user();
@@ -26,23 +27,33 @@ class ReportController extends BaseController
             return Response::json(['message' => " Access Denied"]);
         }
 
+        $endDate = $this->request->endDate;
+        $startDate = $this->request->startDate;
+
+        // Check if the date fields are not empty
+        if (empty($startDate) || empty($endDate)) {
+            return Response::json(['message' => "The date fields cannot be empty"]);
+        }
+
         $tasks = $this->reportRepository->getTasksByDateRange($startDate, $endDate);
+        if (!$tasks) {
+            return Response::json('no data found');
+        }
+
         // TODO if we want to get CSV file run to method  generateReport
         // $report = $this->reportRepository->generateReport($tasks);
-
-        // Return the report as a CSV file
         return json_encode($tasks);
     }
 
-
     // دریافت گزارش یک کاربر
-    public function  getTasksUserByDateRange($startDate, $endDate,$userId){
+    public function getTasksUserByDateRange($startDate, $endDate, $userId)
+    {
         $decoded_token = Auth::user();
         if ($decoded_token->role != 'admin') {
             return Response::json(['message' => " Access Denied"]);
         }
 
-        $tasks = $this->reportRepository->getTasksUserByDateRange($startDate, $endDate,$userId);
+        $tasks = $this->reportRepository->getTasksUserByDateRange($startDate, $endDate, $userId);
         // TODO if we want to get CSV file run to method  generateReport
         // $report = $this->reportRepository->generateReport($tasks);
 
@@ -145,8 +156,8 @@ class ReportController extends BaseController
     private function getReportData()
     {
         return [
-            'filename' => $this->request->get('filename'),
-            'taskId' => $this->request->get('status') ?? 'todo',
+            'filename' => $this->request->filename,
+            'taskId' => $this->request->status ?? 'todo',
             'userId' => Auth::user()->id,
         ];
     }

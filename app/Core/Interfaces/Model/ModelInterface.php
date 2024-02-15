@@ -2,6 +2,7 @@
 
 namespace App\Core\Interfaces\Model;
 
+use JsonSerializable;
 
 interface ModelInterface 
 {

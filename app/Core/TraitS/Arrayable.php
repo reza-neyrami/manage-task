@@ -16,11 +16,14 @@ trait Arrayable
 
     public function jsonSerialize(): array
     {
-        return $this->toArray($this);
+        return $this->toArray();
     }
 
     public function __toString()
     {
         return json_encode($this);
     }
+
+
+
 }

@@ -33,7 +33,7 @@ $router->group('/files', [JWTMiddleware::class], [], function ($files) {
     $files->post('/upload', 'ReportController@uploadFile');
     $files->get('/{taskId:int}', 'ReportController@getFilesByTaskId');
     $files->post('/create', 'ReportController@createReport');
-    $files->get('/report/{startDate:string}/{endDate:string}', 'ReportController@generateReport');
+    $files->post('/reports/users', 'ReportController@generateReport');
 });
 
 $router->group('/users', [], [], function ($user) {

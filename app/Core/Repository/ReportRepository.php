@@ -2,11 +2,11 @@
 
 namespace App\Core\Repository;
 
+use App\Core\Interfaces\Enum\HttpCode;
 use App\Core\Interfaces\Report\ReportRepositoryInterface;
 use App\Core\Services\Response;
 use App\Model\Report;
 use App\Model\Task;
-
 
 class ReportRepository implements ReportRepositoryInterface
 {
@@ -92,12 +92,18 @@ class ReportRepository implements ReportRepositoryInterface
 
     }
 
-    //دریافت گزارش کاربران
+    //دریافت گزارش  کل کاربران
     public function getTasksByDateRange($startDate, $endDate)
     {
 
         $results = $this->task->getTasksByDateRange($startDate, $endDate);
+        if (!$results) {
+            Response::json(HttpCode::NOT_FOUND);
+        }
+
         // TODO  دریافت  فایل  اکسل  درون کنترلر ست شده
+        // return Response::json(['message' => 'Sucess', 'data' => $results]);
+
         return $results;
 
     }

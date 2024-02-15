@@ -2,13 +2,17 @@
 
 namespace App\Model;
 
+use App\Core\Interfaces\Model\Arrayable;
 use App\Core\Interfaces\Model\Model;
+use JsonSerializable;
 use PDO;
 
-class User extends Model
+class User extends Model implements Arrayable, JsonSerializable
 {
+
     protected $table = 'users';
     protected $fillable = ['username', 'password', 'role', 'email'];
+
     protected $toArray = ['id', 'username', 'role', 'email'];
     public function task()
     {
@@ -17,6 +21,29 @@ class User extends Model
         $stmt->bindValue(1, $this->id);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_CLASS, Task::class);
+    }
+
+    public function __debugInfo()
+    {
+        $data = [];
+        foreach ($this->toArray as $property) {
+            $data[$property] = $this->{$property};
+        }
+        return $data;
+    }
+
+    public function toArray(): array
+    {
+        $data = [];
+        foreach ($this->toArray as $property) {
+            $data[$property] = $this->{$property};
+        }
+        return $data;
+    }
+
+    public function jsonSerialize()
+    {
+        return $this->toArray();
     }
 
     public function tasks()

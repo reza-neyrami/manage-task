@@ -1,11 +1,10 @@
 <?php
 namespace App\Core\Interfaces\Model\BaseModel;
 
-use App\Core\TraitS\Arrayable;
 use App\Core\TraitS\DatabaseConnectionTrait;
 
 abstract class BaseModel{
-    use DatabaseConnectionTrait,Arrayable;
+    use DatabaseConnectionTrait;
     protected $table;
     protected $sql;
     protected $bindings = [];
