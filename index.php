@@ -35,6 +35,7 @@ $router->group('/files', [JWTMiddleware::class], [], function ($files) {
     $files->post('/create', 'ReportController@createReport');
     $files->post('/reports/users', 'ReportController@generateReport');
     $files->post('/reports/users/{taskId:int}', 'ReportController@getLogsWithTaskId');
+    $files->get('/list', 'ReportController@listDirectoryLogs');
 });
 
 $router->group('/users', [JWTMiddleware::class], [], function ($user) {
@@ -57,7 +58,8 @@ $router->group('/tasks', [JWTMiddleware::class], [], function ($tasks) {
     $tasks->delete('/{id:int}', 'TaskController@deleteTask');
     $tasks->get('/user/{id:int}', 'TaskController@getTasksByUserId');
     $tasks->get('/users', 'TaskController@getUsers');
-    $tasks->post('/assignuser/{taskId:int}', 'TaskController@assignTask', [JWTMiddleware::class]);
+    $tasks->post('/assignuser/{taskId:int}', 'TaskController@assignTask');
+    $tasks->delete('/deassignuser/{taskId:int}', 'TaskController@deassignTask');
 
 });
 

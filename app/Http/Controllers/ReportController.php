@@ -175,4 +175,26 @@ class ReportController extends BaseController
         return json_encode($report);
     }
 
+    public function listDirectoryLogs(){
+        if(Auth::user()->role !='admin') {
+            return Response::json(['message'=> 'UnAuthorize'],403);
+        }
+        $dir =  $_SERVER['DOCUMENT_ROOT'] . "/public/uploads/";
+        $files = scandir($dir);
+
+        $fileList = [];
+    
+        foreach($files as $file){
+            if($file == '.' || $file == '..') continue;
+    
+            $fileList[] = [
+                'name' => $file,
+                'url' => '/public/uploads/'.$file,
+            ];
+        }
+    
+        echo json_encode($fileList);
+        
+    }
+
 }

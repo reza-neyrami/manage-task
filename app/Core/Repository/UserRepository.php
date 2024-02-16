@@ -2,11 +2,10 @@
 
 namespace App\Core\Repository;
 
-use App\Core\Interfaces\User\UserRepositoryInterface;
 use App\Core\Services\Response;
 use App\Model\User;
 
-class UserRepository implements UserRepositoryInterface
+class UserRepository
 {
     private $model;
 
@@ -69,14 +68,21 @@ class UserRepository implements UserRepositoryInterface
         }
     }
 
-    public function all(): array
+    public function all()
     {
-        return $this->model->findAll();
+        $results = [];
+        $this->model->chunk(100, function ($users) use (&$results) {
+            foreach ($users as $user) {
+                $results[] = $user;
+            }
+        });
+        return $results;
     }
 
     public function paginate(int $page = 1, int $perPage = 15): array
     {
         return $this->model->paginate($page, $perPage);
+        // return $this->model->paginate($page, $perPage);
     }
 
     public function findBy(string $field, string $value): ?User

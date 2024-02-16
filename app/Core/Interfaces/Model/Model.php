@@ -5,12 +5,11 @@ namespace App\Core\Interfaces\Model;
 use App\Core\Interfaces\Model\BaseModel\BaseModel;
 use App\Core\Interfaces\Model\QueryBuilder\Conditions;
 use App\Core\Interfaces\Model\QueryBuilder\Relations;
-
 use PDO;
 
 abstract class Model extends BaseModel implements ModelInterface
 {
-    use Relations, Conditions ;
+    use Relations, Conditions;
     protected $relations;
 
     public function __construct()
@@ -66,11 +65,32 @@ abstract class Model extends BaseModel implements ModelInterface
             $stmt->bindValue($key + 1, $value);
         }
 
-
         $stmt->execute();
         unset($this->sql, $this->bindings);
 
         return $stmt->fetchAll(PDO::FETCH_CLASS, static::class);
+    }
+
+    public function chunk(int $count, callable $callback)
+    {
+        $model = new static();
+        $offset = 0;
+
+        while (true) {
+            $sql = "SELECT * FROM {$model->table} LIMIT ?, ?";
+            $stmt = $model::$pdo->prepare($sql);
+            $stmt->bindValue(1, $offset, PDO::PARAM_INT);
+            $stmt->bindValue(2, $count, PDO::PARAM_INT);
+            $stmt->execute();
+
+            $results = $stmt->fetchAll(PDO::FETCH_CLASS, static::class);
+
+            if (empty($results)) {
+                break;
+            }
+            $callback($results);
+            $offset += $count;
+        }
     }
 
     public function save(): void
@@ -105,6 +125,25 @@ abstract class Model extends BaseModel implements ModelInterface
         $stmt = $this->getPDO()->prepare($sql);
         $stmt->bindParam(1, $this->id, PDO::PARAM_INT);
         $stmt->execute();
+    }
+
+    public function get()
+    {
+        $model = new static();
+        $sql = "SELECT * FROM {$model->table} ORDER BY id ASC LIMIT 1";
+        if (isset($this->sql)) {
+            $sql = $this->sql;
+        }
+        $stmt = $model::$pdo->prepare($sql);
+        foreach ($this->bindings as $key => $value) {
+            $stmt->bindValue($key + 1, $value);
+        }
+        $stmt->execute();
+        unset($this->sql, $this->bindings);
+
+        $result = $stmt->fetchObject(static::class) ?: null;
+
+        return $result;
     }
 
     public static function first(): ?self
@@ -164,15 +203,15 @@ abstract class Model extends BaseModel implements ModelInterface
         $sql = "SELECT * FROM {$model->table} LIMIT $perPage OFFSET $offset";
         $stmt = $model::$pdo->query($sql);
         $data = $stmt->fetchAll(PDO::FETCH_CLASS, static::class);
-    
+
         // Get the total number of records
         $sql = "SELECT COUNT(*) as total FROM {$model->table}";
         $stmt = $model::$pdo->query($sql);
         $total = $stmt->fetch(PDO::FETCH_OBJ)->total;
-    
+
         // Calculate the total number of pages
         $pages = ceil($total / $perPage);
-    
+
         // Return the data along with pagination info
         return [
             'data' => $data,
@@ -184,7 +223,6 @@ abstract class Model extends BaseModel implements ModelInterface
             ],
         ];
     }
-    
 
     protected function getUpdateProperties(): array
     {

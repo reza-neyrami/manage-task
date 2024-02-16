@@ -9,7 +9,9 @@ use PDO;
 
 class User extends Model implements Arrayable, JsonSerializable
 {
-
+const ROLE_ADMIN = 'admin';
+const ROLE_PROGRAMMER = 'programmer';
+const ROLE_TESTER = 'tester';
     protected $table = 'users';
     protected $fillable = ['username', 'password', 'role', 'email'];
 

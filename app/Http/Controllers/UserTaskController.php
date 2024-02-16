@@ -8,6 +8,7 @@ use App\Core\Repository\UserTaskRepository;
 use App\Core\Services\Auth;
 use App\Core\Services\Request;
 use App\Core\Services\Response;
+use App\Model\User;
 
 class UserTaskController extends BaseController
 {
@@ -29,7 +30,7 @@ class UserTaskController extends BaseController
     {
         try {
             $user = Auth::user();
-            if ($user->role != "admin") {
+            if ($user->role != User::ROLE_PROGRAMMER) {
                 Response::json(["Message" => "Just Only Programmer an Authorize"], 400);
             }
             $task = $this->taskRepository->model()->find($taskId);

@@ -142,7 +142,6 @@ class UserController extends BaseController
         return Response::json($skilesUsers, 200);
     }
 
-
     // دریافت اطلاعات کاربران بر اساس نام کاربری
     public function getTaskByUserId()
     {
@@ -170,7 +169,6 @@ class UserController extends BaseController
     {
         try {
             $users = $this->userRepository->paginate($this->request->page ?? 1, $this->request->perPage ?? 10);
-            // return $task;
             return Response::json($users, 200);
         } catch (\Exception $e) {
             return Response::json(['message' => 'There was an error getting the users. ,' . $e->getMessage()], 500);

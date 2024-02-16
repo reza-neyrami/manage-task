@@ -8,6 +8,7 @@ use App\Core\Services\Auth;
 use App\Core\Services\Request;
 use App\Core\Services\Response;
 use App\Model\Task;
+use App\Model\User;
 use Exception;
 
 class TaskController extends BaseController
@@ -43,11 +44,11 @@ class TaskController extends BaseController
         return $task;
     }
 
-    // get tasks by userId just only 
+    // get tasks by userId just only
     public function getTasksByUserId(int $userId)
     {
         try {
-            
+
             $tasks = $this->taskRepository->findByUserId($userId);
             Response::json($tasks, 200);
             // Render the tasks data in your view
@@ -103,7 +104,7 @@ class TaskController extends BaseController
         try {
             $this->taskRepository->delete($id);
             return Response::json(['message' => 'Task deleted successfully.'], 200);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // Handle exception here
             return Response::json(['message' => 'There was an error deleting the task. ,' . $e->getMessage()], 500);
         }
@@ -112,9 +113,9 @@ class TaskController extends BaseController
     public function getAllTasks()
     {
         try {
-            $tasks = $this->taskRepository->all();
+            $tasks = $this->taskRepository->paginate($this->request->page ?? 1, $this->request->perPage ?? 10);
             return Response::json($tasks, 200);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // Handle exception here
             return Response::json(['message' => 'There was an error getting the tasks. ,' . $e->getMessage()], 500);
         }
@@ -126,7 +127,7 @@ class TaskController extends BaseController
             $tasks = $this->taskRepository->paginate($limit, $page);
             return Response::json($tasks, 200);
             // Render the tasks data in your view
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // Handle exception here
             return Response::json(['message' => 'There was an error getting the tasks. ,' . $e->getMessage()], 500);
         }
@@ -138,7 +139,7 @@ class TaskController extends BaseController
             $task = $this->taskRepository->findBy($field, $value);
             return Response::json($task, 200);
             // Render the task data in your view
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // Handle exception here
             return Response::json(['message' => 'There was an error getting the task. ,' . $e->getMessage()], 500);
         }
@@ -170,5 +171,19 @@ class TaskController extends BaseController
         }
 
         return Response::json(['message' => " Task assigned successfully"]);
+    }
+
+    //deassgined one task to several user with access role
+    public function deassignTask($taskId)
+    {
+        // Check if the current user is an admin
+        $userId = Auth::user();
+        if ($userId->role != User::ROLE_PROGRAMMER) {
+            return Response::json(['message' => " Access Denied"]);
+        }
+        $this->userTaskRepository->deAssignToUsers($taskId, $userId->id);
+
+        return Response::json(['message' => " Task assigned successfully"], 200);
+
     }
 }

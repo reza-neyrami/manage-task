@@ -2,6 +2,7 @@
 namespace App\Core\Repository;
 
 use App\Core\Interfaces\UserTask\UserTaskRepositoryInterface;
+use App\Core\Services\Response;
 use App\Model\UserTask;
 
 class UserTaskRepository implements UserTaskRepositoryInterface
@@ -22,15 +23,17 @@ class UserTaskRepository implements UserTaskRepositoryInterface
     public function assignToUsers(int $taskId, int $userIds)
     {
 
-      return  $this->model->create(['userId' => $userIds, 'taskId' => $taskId]);
+        return $this->model->create(['userId' => $userIds, 'taskId' => $taskId]);
 
     }
     public function deAssignToUsers(int $taskId, int $userIds)
     {
 
-       return $this->model
-            ->where('userId', $userIds)->where('taskId', $taskId)
-            ->delete();
+        $deassign = $this->model->where('userId', $taskId)->where('taskId', $taskId)->get();
+        if (!$deassign) {
+            Response::json(['message' => 'No Authorize to deassigned'], 403);
+        }
+        $deassign->delete();
 
     }
 

@@ -10,6 +10,7 @@ interface ModelInterface
     public function save(): void;
     public function delete(): void;
     public  function getAll(): array;
+    public function get();
     // ... سایر متدهای کاربردی
 
     public static function find(int $id);
