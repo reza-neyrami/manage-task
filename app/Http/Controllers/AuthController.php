@@ -64,10 +64,10 @@ class AuthController extends BaseController
     public function register()
     {
         $register = $this->authRepositroy->register([
-            'username' => $this->request->get('username'),
-            'email' => $this->request->get('email'),
-            'password' => $this->request->get('password'),
-            'role' => $this->request->get('role') ?? 'programmer',
+            'username' => $this->request->username,
+            'email' => $this->request->email,
+            'password' => $this->request->password,
+            'role' => $this->request->role ?? 'programmer',
         ]);
         if ($register['status'] == false) {
             return Response::json($register, 401);

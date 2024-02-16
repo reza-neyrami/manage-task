@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Core\Repository\AuthRepository;
 use App\Core\Repository\UserRepository;
 use App\Core\Services\Auth;
 use App\Core\Services\Request;
@@ -10,11 +11,13 @@ use App\Core\Services\Response;
 class UserController extends BaseController
 {
     private $userRepository;
+    private $authRepository;
     protected $request;
 
-    public function __construct(UserRepository $userRepository, Request $request)
+    public function __construct(UserRepository $userRepository, AuthRepository $authRepository, Request $request)
     {
         $this->userRepository = $userRepository;
+        $this->authRepository = $authRepository;
         $this->request = $request;
     }
 
@@ -38,23 +41,62 @@ class UserController extends BaseController
         }
     }
 
-    // ایجاد کاربر 
+    public function upOrCreateUser()
+    {
+        try {
+            $userData = $this->getUserData();
+            $this->validateUserData($userData);
+
+            if (Auth::user()->role != 'admin') {
+                throw new \Exception('لطفا لاگین کنید ', 400);
+            }
+
+            if ($this->request->id && $this->request->email) {
+                // اگر شناسه کاربر وجود دارد، کاربر را به‌روزرسانی می‌کنیم
+                $user = $this->userRepository->findById($this->request->id);
+                if (!$user) {
+                    throw new \Exception('Not Found Users', 400);
+                }
+                $this->userRepository->update($this->request->id, $userData);
+                return Response::json(['message' => 'User updated successfully.'], 200);
+
+            }
+
+            // dd(error_get_last());
+            // در غیر این صورت، یک کاربر جدید ایجاد می‌کنیم
+            $user = $this->userRepository->create($userData);
+            return json_encode($user);
+        } catch (\Exception $e) {
+            return Response::json(['message' => 'There was an error. ,' . $e->getMessage()], 500);
+        }
+    }
+
+    // ایجاد کاربر
     public function createUser()
     {
         try {
             $userData = $this->getUserData();
             $this->validateUserData($userData);
+            if (Auth::user()->role != 'admin') {
+                throw new \Exception('لطفا لاگین کنید ', 400);
+            }
+
             $user = $this->userRepository->create($userData);
-            return Response::json($user, 201);
+            return json_encode($user);
         } catch (\Exception $e) {
             return Response::json(['message' => 'There was an error creating the user. ,' . $e->getMessage()], 500);
         }
     }
 
-    // دریافت  اطلاعات کل کاربران 
+    // دریافت  اطلاعات کل کاربران
     private function getUserData()
     {
-        return $this->request->all();
+        return [
+            'username' => $this->request->username,
+            'email' => $this->request->email,
+            'password' => password_hash($this->request->password, PASSWORD_DEFAULT),
+            'role' => $this->request->role,
+        ];
     }
 
     private function validateUserData($data)
@@ -64,6 +106,17 @@ class UserController extends BaseController
             if (!isset($data[$field])) {
                 throw new \Exception("The field '{$field}' is required.");
             }
+        }
+    }
+
+    public function updateUser(int $id)
+    {
+        try {
+            $data = array_merge($this->getUserData(), ['status' => 'active']);
+            $this->userRepository->update($id, $data);
+            return Response::json(['message' => 'User updated successfully.'], 200);
+        } catch (\Exception $e) {
+            return Response::json(['message' => 'There was an error updating the user. ,' . $e->getMessage()], 500);
         }
     }
 
@@ -86,16 +139,6 @@ class UserController extends BaseController
         return Response::json($skilesUsers, 200);
     }
 
-    public function updateUser(int $id)
-    {
-        try {
-            $data = array_merge($this->getUserData(), ['status' => 'active']);
-            $this->userRepository->update($id, $data);
-            return Response::json(['message' => 'User updated successfully.'], 200);
-        } catch (\Exception $e) {
-            return Response::json(['message' => 'There was an error updating the user. ,' . $e->getMessage()], 500);
-        }
-    }
     public function getTaskByUserId()
     {
         try {
@@ -121,7 +164,7 @@ class UserController extends BaseController
     public function getAllUsers()
     {
         try {
-            $users = $this->userRepository->all();
+            $users = $this->userRepository->paginate($this->request->page ?? 1, $this->request->perPage ?? 10);
             // return $task;
             return Response::json($users, 200);
         } catch (\Exception $e) {

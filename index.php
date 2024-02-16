@@ -3,7 +3,6 @@
 use App\Core\Router;
 use App\Core\Services\Container;
 use App\Core\Services\Request;
-use App\Core\TraitS\DatabaseConnectionTrait;
 use App\Http\Middleware\ApiMiddleware;
 use App\Http\Middleware\JWTMiddleware;
 use Dotenv\Dotenv;
@@ -36,17 +35,18 @@ $router->group('/files', [JWTMiddleware::class], [], function ($files) {
     $files->post('/reports/users', 'ReportController@generateReport');
 });
 
-$router->group('/users', [], [], function ($user) {
+$router->group('/users', [JWTMiddleware::class], [], function ($user) {
     $user->get('/', 'UserController@getAllUsers');
     $user->get('/{id:int}', 'UserController@getUser');
     $user->get('/skile/{skile:string}', 'UserController@getUserSkile');
     $user->post('/', 'UserController@createUser');
+    $user->post('/upOrCreate', 'UserController@upOrCreateUser');
     $user->put('/{id:int}', 'UserController@updateUser');
     $user->delete('/{id:int}', 'UserController@deleteUser');
     $user->get('/getTaskUser', 'UserController@getTaskByUserId');
 });
 
-$router->group('/tasks', [], [], function ($tasks) {
+$router->group('/tasks', [JWTMiddleware::class], [], function ($tasks) {
     $tasks->get('/', 'TaskController@getAllTasks');
     $tasks->get('/{id:int}', 'TaskController@getTask');
     $tasks->post('/create', 'TaskController@createTask');

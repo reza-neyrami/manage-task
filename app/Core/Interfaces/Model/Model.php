@@ -5,7 +5,7 @@ namespace App\Core\Interfaces\Model;
 use App\Core\Interfaces\Model\BaseModel\BaseModel;
 use App\Core\Interfaces\Model\QueryBuilder\Conditions;
 use App\Core\Interfaces\Model\QueryBuilder\Relations;
-use App\Core\TraitS\Arrayable;
+
 use PDO;
 
 abstract class Model extends BaseModel implements ModelInterface
@@ -119,7 +119,6 @@ abstract class Model extends BaseModel implements ModelInterface
         $model = new static();
         $model->executeTransaction(function () use ($model, $id, $data) {
             $properties = array_flip($model->getUpdateProperties());
-
             $set = [];
             foreach ($data as $key => $value) {
                 if (isset($properties[$key])) {
@@ -163,8 +162,28 @@ abstract class Model extends BaseModel implements ModelInterface
         $offset = ($page - 1) * $perPage;
         $sql = "SELECT * FROM {$model->table} LIMIT $perPage OFFSET $offset";
         $stmt = $model::$pdo->query($sql);
-        return $stmt->fetchAll(PDO::FETCH_CLASS, static::class);
+        $data = $stmt->fetchAll(PDO::FETCH_CLASS, static::class);
+    
+        // Get the total number of records
+        $sql = "SELECT COUNT(*) as total FROM {$model->table}";
+        $stmt = $model::$pdo->query($sql);
+        $total = $stmt->fetch(PDO::FETCH_OBJ)->total;
+    
+        // Calculate the total number of pages
+        $pages = ceil($total / $perPage);
+    
+        // Return the data along with pagination info
+        return [
+            'data' => $data,
+            'pagination' => [
+                'current' => $page,
+                'perPage' => $perPage,
+                'total' => $total,
+                'pages' => $pages,
+            ],
+        ];
     }
+    
 
     protected function getUpdateProperties(): array
     {

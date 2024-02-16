@@ -38,6 +38,7 @@ class UserRepository implements UserRepositoryInterface
         return $user;
     }
 
+    // create User  ایجاد  کاربر
     public function create(array $data): User
     {
         try {
