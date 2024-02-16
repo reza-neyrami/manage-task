@@ -41,6 +41,7 @@ class UserController extends BaseController
         }
     }
 
+    // آپدیت و ذخیره کاربران
     public function upOrCreateUser()
     {
         try {
@@ -88,7 +89,7 @@ class UserController extends BaseController
         }
     }
 
-    // دریافت  اطلاعات کل کاربران
+    // دریافت فیلد های مربوط به اطلاعات کل کاربران
     private function getUserData()
     {
         return [
@@ -99,6 +100,7 @@ class UserController extends BaseController
         ];
     }
 
+    // در صورت خالی بودن validation execute
     private function validateUserData($data)
     {
         $requiredFields = ['username', 'password', 'role', 'email'];
@@ -109,6 +111,7 @@ class UserController extends BaseController
         }
     }
 
+    // ویرایش کاربران
     public function updateUser(int $id)
     {
         try {
@@ -139,6 +142,8 @@ class UserController extends BaseController
         return Response::json($skilesUsers, 200);
     }
 
+
+    // دریافت اطلاعات کاربران بر اساس نام کاربری
     public function getTaskByUserId()
     {
         try {

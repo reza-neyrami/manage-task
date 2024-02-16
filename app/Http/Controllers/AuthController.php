@@ -40,6 +40,7 @@ class AuthController extends BaseController
         return Response::json([
             'access_token' => $jwt_token,
             "message" => $login,
+            "status" => true,
         ], 200);
     }
 

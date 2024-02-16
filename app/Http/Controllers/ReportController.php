@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Core\Repository\ReportRepository;
+use App\Core\Repository\TaskRepository;
 use App\Core\Services\Auth;
 use App\Core\Services\Request;
 use App\Core\Services\Response;
@@ -10,11 +11,13 @@ use App\Core\Services\Response;
 class ReportController extends BaseController
 {
     private $reportRepository;
+    private $taskRepository;
     protected $request;
 
-    public function __construct(ReportRepository $reportRepository, Request $request)
+    public function __construct(ReportRepository $reportRepository, TaskRepository $taskRepository, Request $request)
     {
         $this->reportRepository = $reportRepository;
+        $this->taskRepository = $taskRepository;
         $this->request = $request;
     }
 
@@ -121,7 +124,7 @@ class ReportController extends BaseController
     public function getAllReports()
     {
         try {
-            $Reports = $this->reportRepository->all();
+            $Reports = $this->reportRepository->paginate($this->request->page ?? 1, $this->request->perPage ?? 10);
             return Response::json($Reports, 200);
         } catch (\Exception $e) {
             // Handle exception here
@@ -160,6 +163,16 @@ class ReportController extends BaseController
             'taskId' => $this->request->status ?? 'todo',
             'userId' => Auth::user()->id,
         ];
+    }
+
+    // دریافت گزارشات مربوط به هر تسک کاربر
+    public function getLogsWithTaskId(int $taskId)
+    {
+        $userId = Auth::user()->id;
+        $report = $this->reportRepository->model()
+            ->where('taskId', $taskId)
+            ->where('userId', $userId)->getAll();
+        return json_encode($report);
     }
 
 }

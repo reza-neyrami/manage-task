@@ -26,12 +26,14 @@ class TaskController extends BaseController
         $this->request = $request;
     }
 
+    // دریافت یک تسک بر اساس ایدی
     public function getTask(int $id)
     {
         // echo $id;
         return $this->taskRepository->findById($id);
     }
 
+    // get task by Auth Id
     public function taskByAuthId()
     {
         $task = $this->taskRepository->getByUserId(Auth::user()->id);
@@ -41,9 +43,11 @@ class TaskController extends BaseController
         return $task;
     }
 
+    // get tasks by userId just only 
     public function getTasksByUserId(int $userId)
     {
         try {
+            
             $tasks = $this->taskRepository->findByUserId($userId);
             Response::json($tasks, 200);
             // Render the tasks data in your view
@@ -63,7 +67,7 @@ class TaskController extends BaseController
             Response::json(['message' => 'شما دسترسی به  این بخش رو ندارید'], 403);
         }
         $task = $this->taskRepository->create($data);
-        return $task;
+        return json_encode($task);
     }
     public function updateTask($id)
     {
@@ -143,11 +147,11 @@ class TaskController extends BaseController
     private function getTaskData()
     {
         return [
-            'name' => $this->request->get('name'),
-            'description' => $this->request->get('description'),
-            'startDate' => $this->request->get('startDate'),
-            'endDate' => $this->request->get('endDate'),
-            'status' => $this->request->get('status') ?? 'todo',
+            'name' => $this->request->name,
+            'description' => $this->request->description,
+            'startDate' => $this->request->startDate,
+            'endDate' => $this->request->endDate,
+            'status' => $this->request->status ?? 'todo',
             'userId' => Auth::user()->id,
         ];
     }

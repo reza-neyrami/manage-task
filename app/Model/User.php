@@ -13,7 +13,7 @@ class User extends Model implements Arrayable, JsonSerializable
     protected $table = 'users';
     protected $fillable = ['username', 'password', 'role', 'email'];
 
-    protected $toArray = ['id', 'username', 'role', 'email'];
+    protected $toArray = ['id', 'username', 'role', 'email','created_at'];
     public function task()
     {
         $sql = "SELECT * FROM tasks WHERE userId = ?";

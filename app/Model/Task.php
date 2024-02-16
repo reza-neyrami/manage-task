@@ -11,7 +11,7 @@ class Task extends Model
 {
     protected $timestamps = false;
     protected $table = 'tasks';
-    protected $fillable = ['id', 'name', 'description', 'startDate', 'endDate', 'status', 'userId'];
+    protected $fillable = ['name', 'description', 'startDate', 'endDate', 'status', 'userId'];
     protected $toArray = ['id', 'name', 'description', 'startDate', 'endDate', 'status', 'userId'];
 
     const STATUS_TODO = 'todo';

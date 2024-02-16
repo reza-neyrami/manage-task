@@ -48,10 +48,11 @@ class TaskRepository implements TaskRepositoryInterface
     public function create(array $data): Task
     {
         try {
+
             return $this->model->create($data);
         } catch (\PDOException $e) {
 
-            throw new \Exception('There was an error creating the user.');
+            throw new \Exception('There is errors nothing Create Task.   => '.$e->getMessage());
         }
     }
 
@@ -73,9 +74,9 @@ class TaskRepository implements TaskRepositoryInterface
         return $this->model->findAll();
     }
 
-    public function paginate(int $limit = 15, int $page = 1): array
+    public function paginate(int $page = 1, int $perPage = 15): array
     {
-        return $this->model->paginate($page, $limit);
+        return $this->model->paginate($page, $perPage);
     }
 
     public function findBy(string $field, string $value): ?Task

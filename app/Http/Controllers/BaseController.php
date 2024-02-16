@@ -57,7 +57,7 @@ class BaseController extends Controller
                 $file_path = $upload_dir . $file_name;
                 move_uploaded_file($file_tmp, $file_path);
 
-                Response::json($_SERVER['HTTP_HOST'] . "/public/uploads/" . $file_name);
+                Response::json("/public/uploads/" . $file_name);
             } else {
                 print_r($errors);
             }

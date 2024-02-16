@@ -66,6 +66,7 @@ abstract class Model extends BaseModel implements ModelInterface
             $stmt->bindValue($key + 1, $value);
         }
 
+
         $stmt->execute();
         unset($this->sql, $this->bindings);
 

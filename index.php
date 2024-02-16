@@ -29,10 +29,12 @@ $router->group('/auth', [ApiMiddleware::class], [], function ($auth) {
 });
 
 $router->group('/files', [JWTMiddleware::class], [], function ($files) {
+    $files->get('/', 'ReportController@getAllReports');
     $files->post('/upload', 'ReportController@uploadFile');
     $files->get('/{taskId:int}', 'ReportController@getFilesByTaskId');
     $files->post('/create', 'ReportController@createReport');
     $files->post('/reports/users', 'ReportController@generateReport');
+    $files->post('/reports/users/{taskId:int}', 'ReportController@getLogsWithTaskId');
 });
 
 $router->group('/users', [JWTMiddleware::class], [], function ($user) {

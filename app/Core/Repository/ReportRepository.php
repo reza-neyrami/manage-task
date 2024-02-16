@@ -69,10 +69,11 @@ class ReportRepository implements ReportRepositoryInterface
         return $this->model->findAll();
     }
 
-    public function paginate(int $limit = 15, int $page = 1): array
+    public function paginate(int $page = 1, int $perPage = 15): array
     {
-        return $this->model->paginate($page, $limit);
+        return $this->model->paginate($page, $perPage);
     }
+
 
     public function findBy(string $field, string $value): ?Report
     {
